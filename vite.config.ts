@@ -93,19 +93,25 @@ const configurationValidationPlugin = () => {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    configurationValidationPlugin()
-  ],
-  base: './',
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: true
-  },
-  server: {
-    port: 3000,
-    open: true
-  }
+export default defineConfig(({ mode }) => {
+  // Use '/Alexandria/' for production (GitHub Pages), './' for relative paths
+  // In dev mode, use '/' for local development
+  const base = mode === 'production' ? '/Alexandria/' : '/';
+  
+  return {
+    plugins: [
+      react(),
+      configurationValidationPlugin()
+    ],
+    base,
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      sourcemap: true
+    },
+    server: {
+      port: 3000,
+      open: true
+    }
+  };
 })
