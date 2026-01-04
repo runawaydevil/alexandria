@@ -5,6 +5,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { LinkRewriter } from '../../services/LinkRewriter'
 import { DocumentContext } from '../../types'
+import AlexandriaLogo from '../AlexandriaLogo/AlexandriaLogo'
 import './MarkdownRenderer.css'
 
 interface MarkdownRendererProps {
@@ -180,62 +181,22 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt }) => {
-            // Simple and robust image handling
-            let finalSrc = src || ''
-            
-            // Handle Alexandria logo specifically
-            if (finalSrc.includes('alexandria.png')) {
-              // Use absolute URL for production
-              if (window.location.hostname.includes('github.io')) {
-                finalSrc = 'https://runawaydevil.github.io/alexandria/alexandria.png'
-              } else {
-                // Development
-                finalSrc = '/alexandria.png'
-              }
-            }
-            
-            // Check if it's Alexandria logo for special styling
+            // Check if it's Alexandria logo
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
-                                   finalSrc.includes('alexandria.png') ||
+                                   src?.includes('alexandria.png') ||
                                    alt?.toLowerCase().includes('alexandria')
             
-            // Force visibility with container similar to what worked
+            // Use dedicated component for Alexandria logo
             if (isAlexandriaLogo) {
-              return (
-                <div style={{
-                  textAlign: 'center',
-                  display: 'block',
-                  width: '100%',
-                  margin: '20px auto',
-                  padding: '10px'
-                }}>
-                  <img 
-                    src={finalSrc}
-                    alt={alt || 'Alexandria Logo'}
-                    style={{
-                      maxWidth: '200px',
-                      height: 'auto',
-                      display: 'block !important' as any,
-                      margin: '0 auto',
-                      visibility: 'visible !important' as any,
-                      opacity: '1 !important' as any,
-                      position: 'static',
-                      border: '1px solid #ccc'
-                    }}
-                  />
-                </div>
-              )
+              return <AlexandriaLogo alt={alt} />
             }
             
+            // Simple handling for other images
             return (
               <img 
-                src={finalSrc}
+                src={src}
                 alt={alt || 'Image'}
                 className="md-img"
-                style={{ 
-                  display: 'block',
-                  margin: '12px auto'
-                }}
               />
             )
           },

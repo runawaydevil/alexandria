@@ -146,29 +146,13 @@
   text-align: center !important;
 }
 
-/* Images */
+/* Images - Simplified */
 .md-img {
   max-width: 100%;
   height: auto;
   border: 1px solid var(--border-color);
   margin: 8px auto;
   display: block;
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Force Alexandria logo visibility */
-img[alt*="Alexandria Logo"],
-img[alt*="alexandria logo"],
-img[src*="alexandria.png"] {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: static !important;
-  max-width: 200px !important;
-  height: auto !important;
-  margin: 12px auto !important;
-  border: 1px solid #ccc !important;
 }
 
 .md-img-error {

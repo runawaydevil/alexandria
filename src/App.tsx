@@ -4,7 +4,6 @@ import Layout from './components/Layout/Layout'
 import Home from './pages/Home/Home'
 import Reader from './pages/Reader/Reader'
 import About from './pages/About/About'
-import './utils/debugToggle' // Initialize debug functions
 import './App.css'
 
 function AppWithLocation() {
