@@ -37,12 +37,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   } : undefined
   // Helper function to convert relative paths with comprehensive fallback strategies
   const convertImagePath = (src: string): string => {
+    console.log('convertImagePath - Input src:', src)
+    
     if (!src || src.startsWith('http') || src.startsWith('data:')) {
+      console.log('convertImagePath - Already absolute URL, returning as-is')
       return src
     }
 
     // Special handling for Alexandria logo with multiple fallback paths
     if (src.includes('alexandria.png')) {
+      console.log('convertImagePath - Detected alexandria.png')
       // For local Alexandria README, use the public path directly
       if (!repositoryContext || (repositoryContext.owner === 'runawaydevil' && repositoryContext.repo === 'alexandria')) {
         // Detect if we're on GitHub Pages
@@ -50,21 +54,30 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         const pathname = window.location.pathname
         const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
         
-        // Handle different source formats from README
-        if (src === './public/alexandria.png' || src === 'public/alexandria.png' || src.includes('public/alexandria.png')) {
+        console.log('convertImagePath - hostname:', hostname, 'pathname:', pathname, 'isProduction:', isProduction)
+        
+        // Handle different source formats from README - check for ./public/ or public/ prefix
+        if (src.includes('public/alexandria.png') || src === './public/alexandria.png' || src === 'public/alexandria.png') {
           // For ./public/alexandria.png from README, use local path
-          return isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
+          const result = isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
+          console.log('convertImagePath - Converting public/alexandria.png to:', result)
+          return result
         }
         
         // For other alexandria.png references
-        return isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
+        const result = isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
+        console.log('convertImagePath - Converting alexandria.png to:', result)
+        return result
       }
       // For other repositories, try GitHub raw URL first
-      return `https://raw.githubusercontent.com/${repositoryContext.owner}/${repositoryContext.repo}/${repositoryContext.ref}/public/alexandria.png`
+      const result = `https://raw.githubusercontent.com/${repositoryContext.owner}/${repositoryContext.repo}/${repositoryContext.ref}/public/alexandria.png`
+      console.log('convertImagePath - Other repo, using GitHub raw URL:', result)
+      return result
     }
 
     // If we have repository context, convert relative paths
-    if (repositoryContext && !src.startsWith('/')) {
+    // BUT: Skip this for alexandria.png in local Alexandria repo (already handled above)
+    if (repositoryContext && !src.startsWith('/') && !src.includes('alexandria.png')) {
       const { owner, repo, ref, path } = repositoryContext
       
       // Handle relative paths with improved resolution
