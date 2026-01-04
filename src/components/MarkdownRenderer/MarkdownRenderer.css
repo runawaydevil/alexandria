@@ -155,6 +155,28 @@
   display: block;
 }
 
+/* Alexandria Logo Container - Force visibility */
+.alexandria-logo-container {
+  display: block !important;
+  text-align: center !important;
+  width: 100% !important;
+  margin: 20px auto !important;
+  padding: 10px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.alexandria-logo {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  max-width: 200px !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  border: 1px solid #ccc !important;
+  position: static !important;
+}
+
 .md-img-error {
   max-width: 100%;
   height: auto;

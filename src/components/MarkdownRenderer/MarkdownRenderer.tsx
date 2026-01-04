@@ -5,7 +5,6 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { LinkRewriter } from '../../services/LinkRewriter'
 import { DocumentContext } from '../../types'
-import AlexandriaLogo from '../AlexandriaLogo/AlexandriaLogo'
 import './MarkdownRenderer.css'
 
 interface MarkdownRendererProps {
@@ -180,22 +179,47 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               </a>
             )
           },
-          img: ({ src, alt }) => {
-            // Check if it's Alexandria logo
-            const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
-                                   src?.includes('alexandria.png') ||
-                                   alt?.toLowerCase().includes('alexandria')
+          img: ({ src, alt, width, height }) => {
+            // Convert relative path from README.md to correct path
+            let finalSrc = src || ''
             
-            // Use dedicated component for Alexandria logo
-            if (isAlexandriaLogo) {
-              return <AlexandriaLogo alt={alt} />
+            // Handle ./public/alexandria.png from README.md
+            if (finalSrc === './public/alexandria.png') {
+              // In production (GitHub Pages)
+              if (window.location.hostname.includes('github.io')) {
+                finalSrc = '/alexandria/alexandria.png'
+              } else {
+                // Development
+                finalSrc = '/alexandria.png'
+              }
             }
             
-            // Simple handling for other images
+            // Check if it's Alexandria logo for special container
+            const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
+                                   finalSrc.includes('alexandria.png')
+            
+            if (isAlexandriaLogo) {
+              return (
+                <div className="alexandria-logo-container">
+                  <img 
+                    src={finalSrc}
+                    alt={alt || 'Alexandria Logo'}
+                    width={width}
+                    height={height}
+                    className="alexandria-logo"
+                    onLoad={() => console.log('✅ Alexandria logo loaded:', finalSrc)}
+                    onError={() => console.error('❌ Alexandria logo failed:', finalSrc)}
+                  />
+                </div>
+              )
+            }
+            
             return (
               <img 
-                src={src}
+                src={finalSrc}
                 alt={alt || 'Image'}
+                width={width}
+                height={height}
                 className="md-img"
               />
             )
