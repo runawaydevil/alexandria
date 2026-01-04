@@ -98,7 +98,6 @@ export default defineConfig({
     react(),
     configurationValidationPlugin()
   ],
-  base: '/Alexandria/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
