@@ -41,11 +41,21 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return src
     }
 
+    // Get base path for proper resolution
+    const baseElement = document.querySelector('base')
+    const basePath = baseElement?.getAttribute('href') || '/'
+
     // Special handling for Alexandria logo with multiple fallback paths
     if (src.includes('alexandria.png')) {
       // For local Alexandria README, use the public path directly
       if (!repositoryContext || (repositoryContext.owner === 'runawaydevil' && repositoryContext.repo === 'alexandria')) {
-        return '/alexandria.png' // Primary path in public directory
+        // In development (base = '/'), use '/alexandria.png'
+        // In production (base = '/alexandria/'), use '/alexandria/alexandria.png'
+        if (basePath === '/') {
+          return '/alexandria.png' // Development
+        } else {
+          return `${basePath}alexandria.png` // Production
+        }
       }
       // For other repositories, try GitHub raw URL first
       return `https://raw.githubusercontent.com/${repositoryContext.owner}/${repositoryContext.repo}/${repositoryContext.ref}/public/alexandria.png`
@@ -100,9 +110,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const getImageFallbackPaths = (originalSrc: string): string[] => {
     const fallbacks: string[] = []
     
+    // Get base path for proper fallback resolution
+    const baseElement = document.querySelector('base')
+    const basePath = baseElement?.getAttribute('href') || '/'
+    
     // Special handling for Alexandria logo
     if (originalSrc.includes('alexandria.png')) {
-      fallbacks.push('/alexandria.png')
+      // Add both development and production paths
+      fallbacks.push('/alexandria.png')  // Development
+      fallbacks.push(`${basePath}alexandria.png`)  // Production with base path
+      fallbacks.push('/alexandria/alexandria.png')  // Explicit production path
       fallbacks.push('/public/alexandria.png')
       fallbacks.push('./public/alexandria.png')
       fallbacks.push('alexandria.png')
