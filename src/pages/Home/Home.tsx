@@ -21,13 +21,6 @@ const Home: React.FC = () => {
   
   const { randomEngine, apiClient } = createServices()
 
-  // Function to remove duplicate title from README content
-  const removeDuplicateTitle = (content: string): string => {
-    // Remove first H1 if it matches the title
-    const titlePattern = /^#\s+Alexandria\s*-\s*The\s+Greatest\s+GitHub\s+Library\s*\n?/i
-    return content.replace(titlePattern, '')
-  }
-
   // Load configured default repository README on component mount
   useEffect(() => {
     loadDefaultRepositoryReadme()
@@ -85,11 +78,8 @@ const Home: React.FC = () => {
         ? decodeBase64ToUTF8(readme.content)
         : readme.content
       
-      // Remove duplicate title if present
-      const content = removeDuplicateTitle(decodedContent)
-      
-      console.log('README content loaded:', content.substring(0, 200)) // Debug log
-      setReadmeContent(content)
+      console.log('README content loaded:', decodedContent.substring(0, 200)) // Debug log
+      setReadmeContent(decodedContent)
       
     } catch (err) {
       console.error('Failed to load default repository README:', err)

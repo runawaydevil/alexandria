@@ -4,23 +4,6 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
 
-// #region agent log
-const logDebug = (location: string, message: string, data: any) => {
-  fetch('http://127.0.0.1:7244/ingest/ffe240a7-73ad-4ea1-b95d-1a483e823c50', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location,
-      message,
-      data,
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'A'
-    })
-  }).catch(() => {});
-};
-
 // Determine basename dynamically based on current pathname
 const getBasename = (): string => {
   const pathname = window.location.pathname;
@@ -47,34 +30,6 @@ const getBasename = (): string => {
 };
 
 const basename = getBasename();
-
-logDebug('main.tsx:init', 'Application initialization', {
-  currentUrl: window.location.href,
-  pathname: window.location.pathname,
-  basename: basename,
-  baseHref: document.querySelector('base')?.href || 'none',
-  assetsLoading: document.querySelectorAll('script[type="module"]').length
-});
-
-// Check for asset loading errors
-window.addEventListener('error', (event) => {
-  logDebug('main.tsx:error', 'Asset loading error', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    error: event.error?.toString()
-  });
-}, true);
-
-// Check for unhandled promise rejections
-window.addEventListener('unhandledrejection', (event) => {
-  logDebug('main.tsx:unhandledRejection', 'Unhandled promise rejection', {
-    reason: event.reason?.toString(),
-    promise: event.promise?.toString()
-  });
-});
-// #endregion
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

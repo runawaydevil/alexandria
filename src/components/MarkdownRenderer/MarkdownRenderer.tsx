@@ -35,89 +35,35 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     content,
     links: [] // Will be populated by LinkRewriter if needed
   } : undefined
-  // Helper function to convert relative paths with comprehensive fallback strategies
+
+  // Helper function to convert image paths - FIXED TO DETECT ENVIRONMENT
   const convertImagePath = (src: string): string => {
-    console.log('convertImagePath - Input src:', src)
+    console.log('🔍 convertImagePath - Input src:', src)
     
     if (!src || src.startsWith('http') || src.startsWith('data:')) {
-      console.log('convertImagePath - Already absolute URL, returning as-is')
+      console.log('🔍 convertImagePath - Already absolute, returning:', src)
       return src
     }
 
-    // Special handling for Alexandria logo with multiple fallback paths
+    // Special handling for Alexandria logo - DETECT ENVIRONMENT LIKE HEADER
     if (src.includes('alexandria.png')) {
-      console.log('convertImagePath - Detected alexandria.png')
-      // For local Alexandria README, use the public path directly
-      if (!repositoryContext || (repositoryContext.owner === 'runawaydevil' && repositoryContext.repo === 'alexandria')) {
-        // Detect if we're on GitHub Pages
-        const hostname = window.location.hostname
-        const pathname = window.location.pathname
-        const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
-        
-        console.log('convertImagePath - hostname:', hostname, 'pathname:', pathname, 'isProduction:', isProduction)
-        
-        // Handle different source formats from README - check for ./public/ or public/ prefix
-        if (src.includes('public/alexandria.png') || src === './public/alexandria.png' || src === 'public/alexandria.png') {
-          // For ./public/alexandria.png from README, use local path
-          const result = isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
-          console.log('convertImagePath - Converting public/alexandria.png to:', result)
-          return result
-        }
-        
-        // For other alexandria.png references
-        const result = isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
-        console.log('convertImagePath - Converting alexandria.png to:', result)
-        return result
-      }
-      // For other repositories, try GitHub raw URL first
-      const result = `https://raw.githubusercontent.com/${repositoryContext.owner}/${repositoryContext.repo}/${repositoryContext.ref}/public/alexandria.png`
-      console.log('convertImagePath - Other repo, using GitHub raw URL:', result)
-      return result
-    }
-
-    // If we have repository context, convert relative paths
-    // BUT: Skip this for alexandria.png in local Alexandria repo (already handled above)
-    if (repositoryContext && !src.startsWith('/') && !src.includes('alexandria.png')) {
-      const { owner, repo, ref, path } = repositoryContext
+      const pathname = window.location.pathname
+      const hostname = window.location.hostname
       
-      // Handle relative paths with improved resolution
-      let resolvedPath = src
-      if (src.startsWith('./')) {
-        // Same directory - handle ./public/alexandria.png case
-        if (src === './public/alexandria.png') {
-          resolvedPath = 'public/alexandria.png'
-        } else {
-          const currentDir = path.includes('/') ? path.substring(0, path.lastIndexOf('/')) : ''
-          resolvedPath = currentDir ? `${currentDir}/${src.substring(2)}` : src.substring(2)
-        }
-      } else if (src.startsWith('../')) {
-        // Parent directory - improved handling
-        const pathParts = path.split('/').slice(0, -1) // Remove filename
-        const srcParts = src.split('/')
-        
-        let upCount = 0
-        for (const part of srcParts) {
-          if (part === '..') {
-            upCount++
-          } else {
-            break
-          }
-        }
-        
-        const remainingParts = srcParts.slice(upCount)
-        const baseParts = pathParts.slice(0, Math.max(0, pathParts.length - upCount))
-        resolvedPath = [...baseParts, ...remainingParts].join('/')
-      } else if (!src.startsWith('/')) {
-        // Relative to current directory
-        const currentDir = path.includes('/') ? path.substring(0, path.lastIndexOf('/')) : ''
-        resolvedPath = currentDir ? `${currentDir}/${src}` : src
+      console.log('🔍 convertImagePath - Environment check:', { pathname, hostname })
+      
+      // Production environment (GitHub Pages)
+      if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
+        console.log('🔍 convertImagePath - PRODUCTION: Converting to /alexandria/alexandria.png')
+        return '/alexandria/alexandria.png'
       }
       
-      // Convert to GitHub raw URL
-      return `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${resolvedPath}`
+      // Development environment
+      console.log('🔍 convertImagePath - DEVELOPMENT: Converting to /alexandria.png')
+      return '/alexandria.png'
     }
 
-    // For absolute paths starting with '/', try as-is first
+    console.log('🔍 convertImagePath - No special handling, returning:', src)
     return src
   }
 
@@ -125,32 +71,26 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const getImageFallbackPaths = (originalSrc: string): string[] => {
     const fallbacks: string[] = []
     
-    // Detect if we're on GitHub Pages
-    const hostname = window.location.hostname
-    const pathname = window.location.pathname
-    const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
-    
-    // Special handling for Alexandria logo
+    // Special handling for Alexandria logo - INCLUDE BOTH ENVIRONMENTS
     if (originalSrc.includes('alexandria.png')) {
-      // Order matters - try production path first if in production, dev path first if in dev
+      const pathname = window.location.pathname
+      const hostname = window.location.hostname
+      const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
+      
       if (isProduction) {
-        fallbacks.push('/alexandria/alexandria.png')  // Production path (try first)
-        fallbacks.push('/alexandria.png')  // Fallback to root
+        // Production: try production path first, then dev path as fallback
+        fallbacks.push('/alexandria/alexandria.png')
+        fallbacks.push('/alexandria.png')
       } else {
-        fallbacks.push('/alexandria.png')  // Development path (try first)
-        fallbacks.push('/alexandria/alexandria.png')  // Fallback to production path
+        // Development: try dev path first, then production path as fallback
+        fallbacks.push('/alexandria.png')
+        fallbacks.push('/alexandria/alexandria.png')
       }
       
-      // Additional fallbacks
-      fallbacks.push('/public/alexandria.png')
-      fallbacks.push('./public/alexandria.png')
-      fallbacks.push('alexandria.png')
-      
-      // If we have repository context, also try GitHub raw URLs
+      // If we have repository context, also try GitHub raw URL as final fallback
       if (repositoryContext) {
         const { owner, repo, ref } = repositoryContext
         fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/public/alexandria.png`)
-        fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/alexandria.png`)
       }
       
       return fallbacks
@@ -217,13 +157,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     alt,
     isAlexandriaLogo 
   }) => {
-    console.log('ImageWithFallback - Original src:', originalSrc)
+    console.log('🎯 ImageWithFallback - Original src:', originalSrc)
     const imageSrc = convertImagePath(originalSrc)
     const fallbackPaths = getImageFallbackPaths(originalSrc)
     
-    console.log('ImageWithFallback - Converted src:', imageSrc)
-    console.log('ImageWithFallback - Fallback paths:', fallbackPaths)
-    console.log('ImageWithFallback - Is production:', window.location.hostname.includes('github.io') || window.location.pathname.startsWith('/alexandria'))
+    console.log('🎯 ImageWithFallback - Converted src:', imageSrc)
+    console.log('🎯 ImageWithFallback - Fallback paths:', fallbackPaths)
     
     const [currentSrcIndex, setCurrentSrcIndex] = React.useState(0)
     const [currentSrc, setCurrentSrc] = React.useState(imageSrc)
@@ -233,20 +172,20 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     const handleImageError = React.useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
       const target = e.target as HTMLImageElement
       
-      console.log('MarkdownRenderer - Image error:', target.src)
-      console.log('MarkdownRenderer - Trying fallback:', currentSrcIndex, '/', fallbackPaths.length)
+      console.log('❌ ImageWithFallback - Image error for:', target.src)
+      console.log('❌ ImageWithFallback - Trying fallback index:', currentSrcIndex, 'of', fallbackPaths.length)
       
       // Try next fallback path
       if (currentSrcIndex < fallbackPaths.length) {
         const nextSrc = fallbackPaths[currentSrcIndex]
-        console.log('MarkdownRenderer - Next fallback:', nextSrc)
+        console.log('🔄 ImageWithFallback - Next fallback src:', nextSrc)
         setCurrentSrc(nextSrc)
         setCurrentSrcIndex(prev => prev + 1)
         target.src = nextSrc
       } else {
         // All fallbacks exhausted
         setHasError(true)
-        console.warn(`Failed to load image: ${originalSrc}. All fallback paths exhausted.`)
+        console.error('💀 ImageWithFallback - ALL FALLBACKS FAILED for:', originalSrc)
       }
     }, [currentSrcIndex, fallbackPaths, originalSrc])
     
@@ -259,7 +198,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     
     // If all fallbacks failed, show alt text or hide
     if (hasError) {
-      console.log('MarkdownRenderer - All fallbacks failed, showing error')
+      console.log('💀 ImageWithFallback - Showing error state for:', originalSrc)
       return alt ? (
         <div 
           className="md-img-error"
@@ -273,12 +212,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             fontStyle: 'italic'
           }}
         >
-          {alt}
+          {alt} (Image failed to load)
         </div>
       ) : null
     }
     
-    console.log('MarkdownRenderer - Rendering img with src:', currentSrc)
+    console.log('✅ ImageWithFallback - Rendering img with src:', currentSrc)
     
     return (
       <img 
@@ -298,7 +237,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         }}
         onError={handleImageError}
         onLoad={() => {
-          console.log('MarkdownRenderer - Image loaded successfully:', currentSrc)
+          console.log('✅ ImageWithFallback - Image loaded successfully:', currentSrc)
           setHasError(false)
         }}
       />
@@ -411,15 +350,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt }) => {
-            console.log('MarkdownRenderer - Processing image:', { src, alt })
+            console.log('🖼️ MarkdownRenderer - Processing image:', { src, alt })
             
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    src?.includes('alexandria.png') ||
                                    alt?.toLowerCase().includes('alexandria')
             
-            console.log('MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
-            console.log('MarkdownRenderer - Original src:', src)
+            console.log('🖼️ MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
+            console.log('🖼️ MarkdownRenderer - Will convert src from:', src, 'to:', convertImagePath(src || ''))
             
             return <ImageWithFallback src={src || ''} alt={alt} isAlexandriaLogo={!!isAlexandriaLogo} />
           },

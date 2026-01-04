@@ -6,23 +6,6 @@ import Reader from './pages/Reader/Reader'
 import About from './pages/About/About'
 import './App.css'
 
-// #region agent log
-const logDebug = (location: string, message: string, data: any) => {
-  fetch('http://127.0.0.1:7244/ingest/ffe240a7-73ad-4ea1-b95d-1a483e823c50', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      location,
-      message,
-      data,
-      timestamp: Date.now(),
-      sessionId: 'debug-session',
-      runId: 'run1',
-      hypothesisId: 'C'
-    })
-  }).catch(() => {});
-};
-
 function AppWithLocation() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,15 +26,6 @@ function AppWithLocation() {
     }
   }, [location.search, navigate, location.hash]);
   
-  // #region agent log
-  logDebug('App.tsx:render', 'Route rendering', {
-    pathname: location.pathname,
-    search: location.search,
-    hash: location.hash,
-    fullPath: location.pathname + location.search + location.hash
-  });
-  // #endregion
-  
   return (
     <Layout>
       <Routes>
@@ -63,7 +37,6 @@ function AppWithLocation() {
     </Layout>
   )
 }
-// #endregion
 
 function App() {
   return <AppWithLocation />
