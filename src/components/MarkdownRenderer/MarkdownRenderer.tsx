@@ -112,16 +112,23 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const getImageFallbackPaths = (originalSrc: string): string[] => {
     const fallbacks: string[] = []
     
-    // Get base path for proper fallback resolution
-    const baseElement = document.querySelector('base')
-    const basePath = baseElement?.getAttribute('href') || '/'
+    // Detect if we're on GitHub Pages
+    const hostname = window.location.hostname
+    const pathname = window.location.pathname
+    const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
     
     // Special handling for Alexandria logo
     if (originalSrc.includes('alexandria.png')) {
-      // Add both development and production paths
-      fallbacks.push('/alexandria.png')  // Development
-      fallbacks.push(`${basePath}alexandria.png`)  // Production with base path
-      fallbacks.push('/alexandria/alexandria.png')  // Explicit production path
+      // Order matters - try production path first if in production, dev path first if in dev
+      if (isProduction) {
+        fallbacks.push('/alexandria/alexandria.png')  // Production path (try first)
+        fallbacks.push('/alexandria.png')  // Fallback to root
+      } else {
+        fallbacks.push('/alexandria.png')  // Development path (try first)
+        fallbacks.push('/alexandria/alexandria.png')  // Fallback to production path
+      }
+      
+      // Additional fallbacks
       fallbacks.push('/public/alexandria.png')
       fallbacks.push('./public/alexandria.png')
       fallbacks.push('alexandria.png')
@@ -189,6 +196,100 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   // Interface for div component with align attribute
   interface DivProps extends React.HTMLAttributes<HTMLDivElement> {
     align?: string
+  }
+
+  // Image component with fallback support
+  const ImageWithFallback: React.FC<{ src: string; alt?: string; isAlexandriaLogo: boolean }> = ({ 
+    src: originalSrc, 
+    alt,
+    isAlexandriaLogo 
+  }) => {
+    console.log('ImageWithFallback - Original src:', originalSrc)
+    const imageSrc = convertImagePath(originalSrc)
+    const fallbackPaths = getImageFallbackPaths(originalSrc)
+    
+    console.log('ImageWithFallback - Converted src:', imageSrc)
+    console.log('ImageWithFallback - Fallback paths:', fallbackPaths)
+    console.log('ImageWithFallback - Is production:', window.location.hostname.includes('github.io') || window.location.pathname.startsWith('/alexandria'))
+    
+    const [currentSrcIndex, setCurrentSrcIndex] = React.useState(0)
+    const [currentSrc, setCurrentSrc] = React.useState(imageSrc)
+    const [hasError, setHasError] = React.useState(false)
+    
+    // Handle image load errors with fallback strategy
+    const handleImageError = React.useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+      const target = e.target as HTMLImageElement
+      
+      console.log('MarkdownRenderer - Image error:', target.src)
+      console.log('MarkdownRenderer - Trying fallback:', currentSrcIndex, '/', fallbackPaths.length)
+      
+      // Try next fallback path
+      if (currentSrcIndex < fallbackPaths.length) {
+        const nextSrc = fallbackPaths[currentSrcIndex]
+        console.log('MarkdownRenderer - Next fallback:', nextSrc)
+        setCurrentSrc(nextSrc)
+        setCurrentSrcIndex(prev => prev + 1)
+        target.src = nextSrc
+      } else {
+        // All fallbacks exhausted
+        setHasError(true)
+        console.warn(`Failed to load image: ${originalSrc}. All fallback paths exhausted.`)
+      }
+    }, [currentSrcIndex, fallbackPaths, originalSrc])
+    
+    // Reset state when src changes
+    React.useEffect(() => {
+      setCurrentSrcIndex(0)
+      setCurrentSrc(imageSrc)
+      setHasError(false)
+    }, [imageSrc])
+    
+    // If all fallbacks failed, show alt text or hide
+    if (hasError) {
+      console.log('MarkdownRenderer - All fallbacks failed, showing error')
+      return alt ? (
+        <div 
+          className="md-img-error"
+          style={{
+            display: 'block',
+            margin: '12px auto',
+            padding: '8px',
+            border: '1px dashed #ccc',
+            textAlign: 'center',
+            color: '#666',
+            fontStyle: 'italic'
+          }}
+        >
+          {alt}
+        </div>
+      ) : null
+    }
+    
+    console.log('MarkdownRenderer - Rendering img with src:', currentSrc)
+    
+    return (
+      <img 
+        src={currentSrc} 
+        alt={alt} 
+        className="md-img"
+        loading="lazy"
+        style={isAlexandriaLogo ? { 
+          maxWidth: '259px', 
+          height: 'auto',
+          border: '1px solid #ccc',
+          display: 'block',
+          margin: '12px auto'
+        } : { 
+          display: 'block',
+          margin: '12px auto'
+        }}
+        onError={handleImageError}
+        onLoad={() => {
+          console.log('MarkdownRenderer - Image loaded successfully:', currentSrc)
+          setHasError(false)
+        }}
+      />
+    )
   }
 
   return (
@@ -299,100 +400,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           img: ({ src, alt }) => {
             console.log('MarkdownRenderer - Processing image:', { src, alt })
             
-            // Convert image path
-            const imageSrc = convertImagePath(src || '')
-            const fallbackPaths = getImageFallbackPaths(src || '')
-            
-            console.log('MarkdownRenderer - Converted src:', imageSrc)
-            console.log('MarkdownRenderer - Fallback paths:', fallbackPaths)
-            
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    src?.includes('alexandria.png') ||
                                    alt?.toLowerCase().includes('alexandria')
             
             console.log('MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
+            console.log('MarkdownRenderer - Original src:', src)
             
-            // State to track current fallback index
-            const [currentSrcIndex, setCurrentSrcIndex] = React.useState(0)
-            const [currentSrc, setCurrentSrc] = React.useState(imageSrc)
-            const [hasError, setHasError] = React.useState(false)
-            
-            // Handle image load errors with fallback strategy
-            const handleImageError = React.useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-              const target = e.target as HTMLImageElement
-              
-              console.log('MarkdownRenderer - Image error:', target.src)
-              console.log('MarkdownRenderer - Trying fallback:', currentSrcIndex, '/', fallbackPaths.length)
-              
-              // Try next fallback path
-              if (currentSrcIndex < fallbackPaths.length) {
-                const nextSrc = fallbackPaths[currentSrcIndex]
-                console.log('MarkdownRenderer - Next fallback:', nextSrc)
-                setCurrentSrc(nextSrc)
-                setCurrentSrcIndex(prev => prev + 1)
-                target.src = nextSrc
-              } else {
-                // All fallbacks exhausted
-                setHasError(true)
-                console.warn(`Failed to load image: ${src}. All fallback paths exhausted.`)
-              }
-            }, [currentSrcIndex, fallbackPaths, src])
-            
-            // Reset state when src changes
-            React.useEffect(() => {
-              setCurrentSrcIndex(0)
-              setCurrentSrc(imageSrc)
-              setHasError(false)
-            }, [imageSrc])
-            
-            // If all fallbacks failed, show alt text or hide
-            if (hasError) {
-              console.log('MarkdownRenderer - All fallbacks failed, showing error')
-              return alt ? (
-                <div 
-                  className="md-img-error"
-                  style={{
-                    display: 'block',
-                    margin: '12px auto',
-                    padding: '8px',
-                    border: '1px dashed #ccc',
-                    textAlign: 'center',
-                    color: '#666',
-                    fontStyle: 'italic'
-                  }}
-                >
-                  {alt}
-                </div>
-              ) : null
-            }
-            
-            console.log('MarkdownRenderer - Rendering img with src:', currentSrc)
-            
-            return (
-              <img 
-                src={currentSrc} 
-                alt={alt} 
-                className="md-img"
-                loading="lazy"
-                style={isAlexandriaLogo ? { 
-                  maxWidth: '259px', 
-                  height: 'auto',
-                  border: '1px solid #ccc',
-                  display: 'block',
-                  margin: '12px auto'
-                } : { 
-                  display: 'block',
-                  margin: '12px auto'
-                }}
-                onError={handleImageError}
-                onLoad={() => {
-                  console.log('MarkdownRenderer - Image loaded successfully:', currentSrc)
-                  // Reset error state on successful load
-                  setHasError(false)
-                }}
-              />
-            )
+            return <ImageWithFallback src={src || ''} alt={alt} isAlexandriaLogo={!!isAlexandriaLogo} />
           },
           table: ({ children }) => (
             <div className="md-table-wrapper">
