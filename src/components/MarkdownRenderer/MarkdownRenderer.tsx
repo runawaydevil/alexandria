@@ -24,8 +24,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className = '',
   repositoryContext 
 }) => {
-  console.log('🔍 MarkdownRenderer received content:', content.substring(0, 200))
-  
   // Create LinkRewriter instance
   const linkRewriter = new LinkRewriter()
   
@@ -110,23 +108,20 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         ]}
         components={{
           // Custom components for Y2K styling
-          div: ({ children, align, ...props }: DivProps) => {
-            console.log('📦 Processing div:', { align, children })
-            return (
-              <div 
-                {...props}
-                style={align === 'center' ? { 
-                  textAlign: 'center',
-                  display: 'block',
-                  width: '100%',
-                  margin: '0 auto'
-                } : undefined}
-                className={`md-div ${align === 'center' ? 'md-div-center' : ''}`}
-              >
-                {children}
-              </div>
-            )
-          },
+          div: ({ children, align, ...props }: DivProps) => (
+            <div 
+              {...props}
+              style={align === 'center' ? { 
+                textAlign: 'center',
+                display: 'block',
+                width: '100%',
+                margin: '0 auto'
+              } : undefined}
+              className={`md-div ${align === 'center' ? 'md-div-center' : ''}`}
+            >
+              {children}
+            </div>
+          ),
           h1: ({ children }) => {
             // Se é "Alexandria", centralizar
             const isMainTitle = children?.toString().toLowerCase().includes('alexandria')
@@ -187,8 +182,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt, width, height }) => {
-            console.log('🖼️ Processing image:', { src, alt, width, height })
-            
             // Convert relative path from README.md to correct path
             let finalSrc = src || ''
             
@@ -201,17 +194,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 // Development
                 finalSrc = '/alexandria.png'
               }
-              console.log('🔄 Converted alexandria.png path:', finalSrc)
             }
             
             // Check if it's Alexandria logo for special container
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    finalSrc.includes('alexandria.png')
             
-            console.log('🏷️ Is Alexandria logo:', isAlexandriaLogo)
-            
             if (isAlexandriaLogo) {
-              console.log('✨ Rendering Alexandria logo with container')
               return (
                 <div className="alexandria-logo-container">
                   <img 
@@ -220,8 +209,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                     width={width}
                     height={height}
                     className="alexandria-logo"
-                    onLoad={() => console.log('✅ Alexandria logo loaded successfully:', finalSrc)}
-                    onError={(e) => console.error('❌ Alexandria logo failed to load:', finalSrc, e)}
                   />
                 </div>
               )
