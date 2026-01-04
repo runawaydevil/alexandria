@@ -5,7 +5,6 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { LinkRewriter } from '../../services/LinkRewriter'
 import { DocumentContext } from '../../types'
-import { debugLog } from '../../utils/cssDebugger'
 import './MarkdownRenderer.css'
 
 interface MarkdownRendererProps {
@@ -36,53 +35,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     content,
     links: [] // Will be populated by LinkRewriter if needed
   } : undefined
-
-  // Helper function to convert image paths - SIMPLIFIED AND FIXED
-  const convertImagePath = (src: string): string => {
-    debugLog('convertImagePath - Input src:', src)
-    
-    if (!src || src.startsWith('http') || src.startsWith('data:')) {
-      debugLog('convertImagePath - Already absolute, returning:', src)
-      return src
-    }
-
-    // EMERGENCY FIX: Force absolute path for Alexandria logo
-    if (src.includes('alexandria.png')) {
-      const hostname = window.location.hostname
-      debugLog('convertImagePath - Alexandria logo detected, hostname:', hostname)
-      
-      // ALWAYS use the absolute path that we know works
-      if (hostname.includes('github.io')) {
-        const absolutePath = 'https://runawaydevil.github.io/alexandria/alexandria.png'
-        debugLog('convertImagePath - EMERGENCY: Using absolute URL:', absolutePath)
-        return absolutePath
-      }
-      
-      // Development environment
-      debugLog('convertImagePath - DEVELOPMENT: Converting to /alexandria.png')
-      return '/alexandria.png'
-    }
-
-    // Handle ./public/ paths - SIMPLIFIED
-    if (src.startsWith('./public/')) {
-      const filename = src.replace('./public/', '')
-      const hostname = window.location.hostname
-      
-      debugLog('convertImagePath - Public file detected:', filename)
-      
-      if (hostname.includes('github.io')) {
-        const forcedPath = `/alexandria/${filename}`
-        debugLog('convertImagePath - FORCING PRODUCTION PUBLIC PATH:', forcedPath)
-        return forcedPath
-      } else {
-        debugLog('convertImagePath - DEVELOPMENT: Converting public file to /' + filename)
-        return `/${filename}`
-      }
-    }
-
-    debugLog('convertImagePath - No special handling, returning:', src)
-    return src
-  }
 
   // Helper function to process markdown links using LinkRewriter
   const processMarkdownLink = (href: string): { href: string; target?: string; rel?: string } => {
@@ -117,76 +69,38 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     align?: string
   }
 
-  // EMERGENCY SIMPLE IMAGE COMPONENT
+  // Clean ImageWithFallback Component - Working Version
   const ImageWithFallback: React.FC<{ src: string; alt?: string; isAlexandriaLogo: boolean }> = ({ 
     src: originalSrc, 
     alt,
     isAlexandriaLogo 
   }) => {
-    console.log('🚨 EMERGENCY IMAGE COMPONENT:', { originalSrc, alt, isAlexandriaLogo })
-    
-    // FORCE ABSOLUTE URL FOR ALEXANDRIA
+    // Use absolute URL for Alexandria logo to avoid path issues
     let finalSrc = originalSrc
     if (originalSrc.includes('alexandria.png')) {
       finalSrc = 'https://runawaydevil.github.io/alexandria/alexandria.png'
-      console.log('🚨 FORCED ABSOLUTE URL:', finalSrc)
     }
     
     return (
-      <div style={{
-        border: '2px solid green',
-        padding: '10px',
-        margin: '10px',
-        backgroundColor: 'lightgreen'
-      }}>
-        <p style={{ color: 'black', fontSize: '12px' }}>
-          EMERGENCY IMAGE CONTAINER - SRC: {finalSrc}
-        </p>
-        <img 
-          src={finalSrc}
-          alt={alt || 'Emergency Image'}
-          style={{
-            display: 'block',
-            margin: '0 auto',
-            maxWidth: '200px',
-            border: '2px solid red',
-            backgroundColor: 'white'
-          }}
-          onLoad={() => console.log('🚨 EMERGENCY FALLBACK IMAGE LOADED:', finalSrc)}
-          onError={() => console.log('🚨 EMERGENCY FALLBACK IMAGE ERROR:', finalSrc)}
-        />
-      </div>
+      <img 
+        src={finalSrc}
+        alt={alt || 'Image'}
+        className="md-img"
+        style={isAlexandriaLogo ? { 
+          maxWidth: '200px', 
+          height: 'auto',
+          display: 'block',
+          margin: '12px auto'
+        } : { 
+          display: 'block',
+          margin: '12px auto'
+        }}
+      />
     )
   }
 
   return (
     <div className={`markdown-renderer ${className}`}>
-      {/* EMERGENCY TEST: Direct image rendering for Alexandria logo */}
-      {content.includes('alexandria.png') && (
-        <div style={{
-          textAlign: 'center',
-          margin: '20px 0',
-          padding: '20px',
-          border: '2px solid red',
-          backgroundColor: 'yellow'
-        }}>
-          <h3 style={{ color: 'red' }}>EMERGENCY TEST - DIRECT IMAGE</h3>
-          <img 
-            src="https://runawaydevil.github.io/alexandria/alexandria.png"
-            alt="Direct Alexandria Logo Test"
-            style={{
-              display: 'block',
-              margin: '0 auto',
-              maxWidth: '200px',
-              border: '3px solid blue',
-              backgroundColor: 'white'
-            }}
-            onLoad={() => console.log('🚨 DIRECT IMAGE LOADED!')}
-            onError={() => console.log('🚨 DIRECT IMAGE ERROR!')}
-          />
-        </div>
-      )}
-      
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
@@ -296,28 +210,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt }) => {
-            debugLog('MarkdownRenderer - Processing image:', { src, alt })
-            debugLog('MarkdownRenderer - Current location:', window.location.href)
-            
-            // FORCE LOG FOR ALEXANDRIA LOGO
-            if (src?.includes('alexandria.png')) {
-              console.log('🎯 PROCESSING ALEXANDRIA LOGO:', { src, alt })
-              console.log('🎯 CURRENT LOCATION:', window.location.href)
-            }
-            
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    src?.includes('alexandria.png') ||
                                    alt?.toLowerCase().includes('alexandria')
-            
-            debugLog('MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
-            debugLog(`MarkdownRenderer - Will convert src from: ${src} to: ${convertImagePath(src || '')}`)
-            
-            // FORCE LOG CONVERTED PATH FOR ALEXANDRIA
-            if (isAlexandriaLogo) {
-              const convertedPath = convertImagePath(src || '')
-              console.log('🎯 ALEXANDRIA LOGO CONVERTED PATH:', convertedPath)
-            }
             
             return <ImageWithFallback src={src || ''} alt={alt} isAlexandriaLogo={!!isAlexandriaLogo} />
           },

@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/alexandria.png" alt="Alexandria Logo" />
+<img src="./public/alexandria.png" alt="Alexandria Logo" width="200"/>
 
 Alexandria is a static web application that allows you to navigate and read Markdown files from public GitHub repositories without authentication.
 

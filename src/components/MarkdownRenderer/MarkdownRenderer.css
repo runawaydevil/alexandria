@@ -152,18 +152,9 @@
   height: auto;
   border: 1px solid var(--border-color);
   margin: 8px auto;
-  display: block !important; /* Force display block */
-  visibility: visible !important; /* Force visibility */
-  opacity: 1 !important; /* Force opacity */
-  position: static !important; /* Prevent positioning issues */
-}
-
-.md-img-force-visible {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: static !important;
-  z-index: 1000 !important;
+  display: block;
+  visibility: visible;
+  opacity: 1;
 }
 
 .md-img-error {
