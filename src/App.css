@@ -1,0 +1,45 @@
+/* App styles - Y2K simple */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+}
+
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Simple link styles */
+a {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* Simple button styles */
+button {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* Simple input styles */
+input, textarea, select {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: 1px dotted var(--primary-color);
+}

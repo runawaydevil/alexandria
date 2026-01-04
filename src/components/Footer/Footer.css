@@ -1,0 +1,27 @@
+.footer {
+  background-color: var(--background-color);
+  border-top: 1px solid var(--border-color);
+  padding: 8px;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.footer-text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.footer-link {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.footer-link:hover {
+  text-decoration: none;
+}

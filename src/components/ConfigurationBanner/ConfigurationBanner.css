@@ -1,0 +1,92 @@
+.configuration-banner {
+  background: var(--background-color);
+  border: 1px solid var(--primary-color);
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 11px;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.banner-icon {
+  font-size: 14px;
+  color: var(--primary-color);
+}
+
+.banner-text {
+  color: var(--text-color);
+  flex: 1;
+  min-width: 200px;
+  line-height: 1.4;
+}
+
+.banner-text strong {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.banner-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+  padding: 4px 8px;
+  border: 1px solid var(--primary-color);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.banner-link:hover {
+  background: var(--primary-color);
+  color: var(--background-color);
+}
+
+.banner-link:focus {
+  outline: 2px dotted var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .configuration-banner {
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  
+  .banner-text {
+    min-width: auto;
+  }
+  
+  .banner-link {
+    align-self: flex-end;
+    padding: 6px 12px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .configuration-banner {
+    border-width: 2px;
+  }
+  
+  .banner-link {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .banner-link {
+    transition: none;
+  }
+}

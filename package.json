@@ -1,0 +1,40 @@
+{
+  "name": "alexandria",
+  "version": "1.0.0",
+  "description": "Alexandria GitHub Markdown Reader - A static web application for infinite GitHub markdown exploration",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "keywords": [
+    "github",
+    "markdown",
+    "reader",
+    "static",
+    "react",
+    "typescript"
+  ],
+  "author": "runawaydevil",
+  "license": "MIT",
+  "homepage": "https://runawaydevil.github.io/Alexandria/",
+  "dependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.11.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0"
+  }
+}
