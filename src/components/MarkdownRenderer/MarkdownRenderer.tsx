@@ -41,21 +41,23 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return src
     }
 
-    // Get base path for proper resolution
-    const baseElement = document.querySelector('base')
-    const basePath = baseElement?.getAttribute('href') || '/'
-
     // Special handling for Alexandria logo with multiple fallback paths
     if (src.includes('alexandria.png')) {
       // For local Alexandria README, use the public path directly
       if (!repositoryContext || (repositoryContext.owner === 'runawaydevil' && repositoryContext.repo === 'alexandria')) {
-        // In development (base = '/'), use '/alexandria.png'
-        // In production (base = '/alexandria/'), use '/alexandria/alexandria.png'
-        if (basePath === '/') {
-          return '/alexandria.png' // Development
-        } else {
-          return `${basePath}alexandria.png` // Production
+        // Detect if we're on GitHub Pages
+        const hostname = window.location.hostname
+        const pathname = window.location.pathname
+        const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
+        
+        // Handle different source formats from README
+        if (src === './public/alexandria.png' || src === 'public/alexandria.png' || src.includes('public/alexandria.png')) {
+          // For ./public/alexandria.png from README, use local path
+          return isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
         }
+        
+        // For other alexandria.png references
+        return isProduction ? '/alexandria/alexandria.png' : '/alexandria.png'
       }
       // For other repositories, try GitHub raw URL first
       return `https://raw.githubusercontent.com/${repositoryContext.owner}/${repositoryContext.repo}/${repositoryContext.ref}/public/alexandria.png`
