@@ -98,6 +98,7 @@ export default defineConfig({
     react(),
     configurationValidationPlugin()
   ],
+  base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
