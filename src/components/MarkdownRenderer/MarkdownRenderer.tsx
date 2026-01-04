@@ -87,11 +87,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         fallbacks.push('/alexandria/alexandria.png')
       }
       
-      // If we have repository context, also try GitHub raw URL as final fallback
+      // Always add GitHub raw URL as final fallback
       if (repositoryContext) {
         const { owner, repo, ref } = repositoryContext
         fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/public/alexandria.png`)
       }
+      
+      // Add additional fallback paths for Alexandria logo
+      fallbacks.push('https://raw.githubusercontent.com/runawaydevil/alexandria/main/public/alexandria.png')
       
       return fallbacks
     }
@@ -161,42 +164,40 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     const imageSrc = convertImagePath(originalSrc)
     const fallbackPaths = getImageFallbackPaths(originalSrc)
     
-    console.log('🎯 ImageWithFallback - Converted src:', imageSrc)
-    console.log('🎯 ImageWithFallback - Fallback paths:', fallbackPaths)
+    // Create complete list of paths to try (main + fallbacks)
+    const allPaths = [imageSrc, ...fallbackPaths]
+    console.log('🎯 ImageWithFallback - All paths to try:', allPaths)
     
-    const [currentSrcIndex, setCurrentSrcIndex] = React.useState(0)
-    const [currentSrc, setCurrentSrc] = React.useState(imageSrc)
+    const [currentPathIndex, setCurrentPathIndex] = React.useState(0)
     const [hasError, setHasError] = React.useState(false)
     
+    // Get current src to display
+    const currentSrc = allPaths[currentPathIndex] || imageSrc
+    
     // Handle image load errors with fallback strategy
-    const handleImageError = React.useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-      const target = e.target as HTMLImageElement
+    const handleImageError = React.useCallback(() => {
+      console.log('❌ ImageWithFallback - Image error for:', currentSrc)
+      console.log('❌ ImageWithFallback - Current path index:', currentPathIndex, 'of', allPaths.length)
       
-      console.log('❌ ImageWithFallback - Image error for:', target.src)
-      console.log('❌ ImageWithFallback - Trying fallback index:', currentSrcIndex, 'of', fallbackPaths.length)
-      
-      // Try next fallback path
-      if (currentSrcIndex < fallbackPaths.length) {
-        const nextSrc = fallbackPaths[currentSrcIndex]
-        console.log('🔄 ImageWithFallback - Next fallback src:', nextSrc)
-        setCurrentSrc(nextSrc)
-        setCurrentSrcIndex(prev => prev + 1)
-        target.src = nextSrc
+      // Try next path
+      if (currentPathIndex + 1 < allPaths.length) {
+        const nextIndex = currentPathIndex + 1
+        console.log('🔄 ImageWithFallback - Trying next path:', allPaths[nextIndex])
+        setCurrentPathIndex(nextIndex)
       } else {
-        // All fallbacks exhausted
+        // All paths exhausted
         setHasError(true)
-        console.error('💀 ImageWithFallback - ALL FALLBACKS FAILED for:', originalSrc)
+        console.error('💀 ImageWithFallback - ALL PATHS FAILED for:', originalSrc)
       }
-    }, [currentSrcIndex, fallbackPaths, originalSrc])
+    }, [currentPathIndex, allPaths, currentSrc, originalSrc])
     
-    // Reset state when src changes
+    // Reset state when original src changes
     React.useEffect(() => {
-      setCurrentSrcIndex(0)
-      setCurrentSrc(imageSrc)
+      setCurrentPathIndex(0)
       setHasError(false)
-    }, [imageSrc])
+    }, [originalSrc])
     
-    // If all fallbacks failed, show alt text or hide
+    // If all paths failed, show error state
     if (hasError) {
       console.log('💀 ImageWithFallback - Showing error state for:', originalSrc)
       return alt ? (
@@ -351,6 +352,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           },
           img: ({ src, alt }) => {
             console.log('🖼️ MarkdownRenderer - Processing image:', { src, alt })
+            console.log('🖼️ MarkdownRenderer - Current location:', window.location.href)
             
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
