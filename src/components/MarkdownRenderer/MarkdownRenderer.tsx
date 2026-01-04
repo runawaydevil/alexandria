@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
+import rehypeRaw from 'rehype-raw'
 import { LinkRewriter } from '../../services/LinkRewriter'
 import { DocumentContext } from '../../types'
 import './MarkdownRenderer.css'
@@ -76,6 +77,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
+          rehypeRaw, // Process raw HTML
           [rehypeSanitize, {
             // Allow HTML tags needed for README
             tagNames: [
