@@ -69,36 +69,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     align?: string
   }
 
-  // Clean ImageWithFallback Component - Working Version
-  const ImageWithFallback: React.FC<{ src: string; alt?: string; isAlexandriaLogo: boolean }> = ({ 
-    src: originalSrc, 
-    alt,
-    isAlexandriaLogo 
-  }) => {
-    // Use absolute URL for Alexandria logo to avoid path issues
-    let finalSrc = originalSrc
-    if (originalSrc.includes('alexandria.png')) {
-      finalSrc = 'https://runawaydevil.github.io/alexandria/alexandria.png'
-    }
-    
-    return (
-      <img 
-        src={finalSrc}
-        alt={alt || 'Image'}
-        className="md-img"
-        style={isAlexandriaLogo ? { 
-          maxWidth: '200px', 
-          height: 'auto',
-          display: 'block',
-          margin: '12px auto'
-        } : { 
-          display: 'block',
-          margin: '12px auto'
-        }}
-      />
-    )
-  }
-
   return (
     <div className={`markdown-renderer ${className}`}>
       <ReactMarkdown
@@ -210,12 +180,41 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt }) => {
+            // Simple and robust image handling
+            let finalSrc = src || ''
+            
+            // Handle Alexandria logo specifically
+            if (finalSrc.includes('alexandria.png')) {
+              // Use absolute URL for production
+              if (window.location.hostname.includes('github.io')) {
+                finalSrc = 'https://runawaydevil.github.io/alexandria/alexandria.png'
+              } else {
+                // Development
+                finalSrc = '/alexandria.png'
+              }
+            }
+            
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
-                                   src?.includes('alexandria.png') ||
+                                   finalSrc.includes('alexandria.png') ||
                                    alt?.toLowerCase().includes('alexandria')
             
-            return <ImageWithFallback src={src || ''} alt={alt} isAlexandriaLogo={!!isAlexandriaLogo} />
+            return (
+              <img 
+                src={finalSrc}
+                alt={alt || 'Image'}
+                className="md-img"
+                style={isAlexandriaLogo ? { 
+                  maxWidth: '200px', 
+                  height: 'auto',
+                  display: 'block',
+                  margin: '12px auto'
+                } : { 
+                  display: 'block',
+                  margin: '12px auto'
+                }}
+              />
+            )
           },
           table: ({ children }) => (
             <div className="md-table-wrapper">
