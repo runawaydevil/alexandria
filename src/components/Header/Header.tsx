@@ -3,42 +3,23 @@ import { Link } from 'react-router-dom'
 import './Header.css'
 
 const Header: React.FC = () => {
-  // Get the base path from the document base element or use fallback logic
-  const getLogoPath = () => {
-    // Try to get base from document
-    const baseElement = document.querySelector('base')
-    const basePath = baseElement?.getAttribute('href') || '/'
-    
-    console.log('Header - Base path:', basePath)
-    
-    // In development, base is '/', in production it's '/alexandria/'
-    if (basePath === '/') {
-      console.log('Header - Using development path: /alexandria.png')
-      return '/alexandria.png'  // Development
-    } else {
-      const prodPath = `${basePath}alexandria.png`
-      console.log('Header - Using production path:', prodPath)
-      return prodPath  // Production: /alexandria/alexandria.png
-    }
-  }
-
   return (
     <header className="header">
       <div className="header-content">
         <Link to="/" className="logo-link" aria-label="Alexandria - Home">
           <img 
-            src={getLogoPath()} 
+            src="/alexandria.png" 
             alt="Alexandria" 
             className="logo"
             width="32"
             height="32"
             onError={(e) => {
+              console.log('Header logo failed to load:', (e.target as HTMLImageElement).src)
               // Fallback strategy for logo
               const img = e.target as HTMLImageElement
               const fallbacks = [
-                '/alexandria.png',
-                '/alexandria/alexandria.png', 
                 '/public/alexandria.png',
+                '/alexandria/alexandria.png', 
                 'alexandria.png'
               ]
               
@@ -47,12 +28,16 @@ const Header: React.FC = () => {
               
               if (currentIndex < fallbacks.length - 1) {
                 const nextFallback = fallbacks[currentIndex + 1]
-                const baseUrl = window.location.origin
-                img.src = baseUrl + nextFallback
+                console.log('Trying fallback:', nextFallback)
+                img.src = nextFallback
               } else {
                 // All fallbacks failed, hide the image
+                console.log('All fallbacks failed, hiding image')
                 img.style.display = 'none'
               }
+            }}
+            onLoad={() => {
+              console.log('Header logo loaded successfully')
             }}
           />
           <span className="logo-text">Alexandria</span>

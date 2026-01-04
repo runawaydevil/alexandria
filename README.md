@@ -1,6 +1,5 @@
 <div align="center">
 
-# Alexandria - The Greatest GitHub Library
 
 <img src="./public/alexandria.png" alt="Alexandria Logo" width="200"/>
 

@@ -191,6 +191,27 @@ const Home: React.FC = () => {
       {/* ConfigurationBanner component kept for potential future use */}
 
       <div className="readme-content">
+        <h1 style={{textAlign: 'center'}}>Alexandria - The Greatest GitHub Library</h1>
+        <div style={{textAlign: 'center', margin: '20px 0'}}>
+          <img 
+            src="/alexandria.png" 
+            alt="Alexandria Logo" 
+            style={{
+              maxWidth: '200px',
+              height: 'auto',
+              border: '1px solid #ccc',
+              display: 'block',
+              margin: '0 auto'
+            }}
+            onLoad={() => console.log('Direct image loaded successfully')}
+            onError={(e) => {
+              console.log('Direct image failed to load')
+              const img = e.target as HTMLImageElement
+              img.style.border = '2px solid red'
+              img.alt = 'FAILED TO LOAD'
+            }}
+          />
+        </div>
         <MarkdownRenderer 
           content={readmeContent} 
           repositoryContext={{

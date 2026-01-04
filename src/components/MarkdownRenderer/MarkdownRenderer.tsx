@@ -189,11 +189,47 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
-          rehypeSanitize, // XSS protection
+          [rehypeSanitize, {
+            // Allow HTML tags needed for README
+            tagNames: [
+              // Default markdown tags
+              'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+              'p', 'br', 'strong', 'em', 'del', 'ins',
+              'ul', 'ol', 'li',
+              'blockquote', 'pre', 'code',
+              'table', 'thead', 'tbody', 'tr', 'th', 'td',
+              'a', 'img',
+              'hr',
+              // Additional HTML tags for README
+              'div', 'span', 'center'
+            ],
+            attributes: {
+              // Allow all standard attributes
+              '*': ['className', 'id', 'style'],
+              'a': ['href', 'target', 'rel'],
+              'img': ['src', 'alt', 'width', 'height', 'title'],
+              'div': ['align'],
+              'h1': ['id'],
+              'h2': ['id'],
+              'h3': ['id'],
+              'h4': ['id'],
+              'h5': ['id'],
+              'h6': ['id']
+            }
+          }],
           rehypeHighlight // Syntax highlighting
         ]}
         components={{
           // Custom components for Y2K styling
+          div: ({ children, align, ...props }) => (
+            <div 
+              {...props}
+              style={align === 'center' ? { textAlign: 'center' } : undefined}
+              className="md-div"
+            >
+              {children}
+            </div>
+          ),
           h1: ({ children }) => {
             // Se é "Alexandria", centralizar
             const isMainTitle = children?.toString().toLowerCase().includes('alexandria')
@@ -254,14 +290,21 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt }) => {
+            console.log('MarkdownRenderer - Processing image:', { src, alt })
+            
             // Convert image path
             const imageSrc = convertImagePath(src || '')
             const fallbackPaths = getImageFallbackPaths(src || '')
+            
+            console.log('MarkdownRenderer - Converted src:', imageSrc)
+            console.log('MarkdownRenderer - Fallback paths:', fallbackPaths)
             
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    src?.includes('alexandria.png') ||
                                    alt?.toLowerCase().includes('alexandria')
+            
+            console.log('MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
             
             // State to track current fallback index
             const [currentSrcIndex, setCurrentSrcIndex] = React.useState(0)
@@ -272,9 +315,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             const handleImageError = React.useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
               const target = e.target as HTMLImageElement
               
+              console.log('MarkdownRenderer - Image error:', target.src)
+              console.log('MarkdownRenderer - Trying fallback:', currentSrcIndex, '/', fallbackPaths.length)
+              
               // Try next fallback path
               if (currentSrcIndex < fallbackPaths.length) {
                 const nextSrc = fallbackPaths[currentSrcIndex]
+                console.log('MarkdownRenderer - Next fallback:', nextSrc)
                 setCurrentSrc(nextSrc)
                 setCurrentSrcIndex(prev => prev + 1)
                 target.src = nextSrc
@@ -294,6 +341,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             
             // If all fallbacks failed, show alt text or hide
             if (hasError) {
+              console.log('MarkdownRenderer - All fallbacks failed, showing error')
               return alt ? (
                 <div 
                   className="md-img-error"
@@ -311,6 +359,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 </div>
               ) : null
             }
+            
+            console.log('MarkdownRenderer - Rendering img with src:', currentSrc)
             
             return (
               <img 
@@ -330,6 +380,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 }}
                 onError={handleImageError}
                 onLoad={() => {
+                  console.log('MarkdownRenderer - Image loaded successfully:', currentSrc)
                   // Reset error state on successful load
                   setHasError(false)
                 }}
