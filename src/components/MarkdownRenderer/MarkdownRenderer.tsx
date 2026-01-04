@@ -23,6 +23,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className = '',
   repositoryContext 
 }) => {
+  console.log('🔍 MarkdownRenderer received content:', content.substring(0, 200))
+  
   // Create LinkRewriter instance
   const linkRewriter = new LinkRewriter()
   
@@ -106,20 +108,23 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         ]}
         components={{
           // Custom components for Y2K styling
-          div: ({ children, align, ...props }: DivProps) => (
-            <div 
-              {...props}
-              style={align === 'center' ? { 
-                textAlign: 'center',
-                display: 'block',
-                width: '100%',
-                margin: '0 auto'
-              } : undefined}
-              className={`md-div ${align === 'center' ? 'md-div-center' : ''}`}
-            >
-              {children}
-            </div>
-          ),
+          div: ({ children, align, ...props }: DivProps) => {
+            console.log('📦 Processing div:', { align, children })
+            return (
+              <div 
+                {...props}
+                style={align === 'center' ? { 
+                  textAlign: 'center',
+                  display: 'block',
+                  width: '100%',
+                  margin: '0 auto'
+                } : undefined}
+                className={`md-div ${align === 'center' ? 'md-div-center' : ''}`}
+              >
+                {children}
+              </div>
+            )
+          },
           h1: ({ children }) => {
             // Se é "Alexandria", centralizar
             const isMainTitle = children?.toString().toLowerCase().includes('alexandria')
