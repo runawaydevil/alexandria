@@ -8,43 +8,24 @@ const About: React.FC = () => {
         <h1>About Alexandria</h1>
         
         <section className="about-section">
-          <h2>What is Alexandria?</h2>
           <p>
-            Alexandria is a static web application that allows you to discover and read 
-            Markdown files from public GitHub repositories without authentication. 
-            It provides an infinite reading experience with intelligent navigation 
-            between related documents.
+            Alexandria is an endless library built from the public knowledge of GitHub.
           </p>
-        </section>
-        
-        <section className="about-section">
-          <h2>Features</h2>
-          <ul>
-            <li>🎲 Random content discovery from GitHub repositories</li>
-            <li>🔗 Intelligent link rewriting for seamless navigation</li>
-            <li>📱 Responsive design for all devices</li>
-            <li>🌙 Dark and light theme support</li>
-            <li>♿ Full accessibility support</li>
-            <li>📤 Easy content sharing</li>
-            <li>💾 Local caching for better performance</li>
-          </ul>
-        </section>
-        
-        <section className="about-section">
-          <h2>Technology</h2>
+          
           <p>
-            Built with React, TypeScript, and Vite. Deployed as a static site 
-            on GitHub Pages with no backend dependencies. All data comes directly 
-            from GitHub's public API.
+            It is a place to read, explore, and get lost in documentation, READMEs, and Markdown files created by people all over the world. Every page you open comes directly from a public repository and is rendered as a readable document, with its structure, links, and context preserved.
           </p>
-        </section>
-        
-        <section className="about-section">
-          <h2>Privacy</h2>
+          
           <p>
-            Alexandria respects your privacy. No user data is collected or sent 
-            to external services beyond the necessary GitHub API calls. All caching 
-            and preferences are stored locally in your browser.
+            Alexandria is designed for discovery. You can jump into a random document, follow links across projects, or open any repository by simply typing owner/repository. There is always something to read—when one text ends, another begins.
+          </p>
+          
+          <p>
+            The project does not store content, track users, or require authentication. Everything you see is fetched on demand from GitHub's public API and rendered in your browser. What you read today may be different tomorrow, as the library continuously evolves with the work of millions of developers and writers.
+          </p>
+          
+          <p>
+            Alexandria is inspired by the idea of a universal library: incomplete, infinite, and alive.
           </p>
         </section>
       </div>
