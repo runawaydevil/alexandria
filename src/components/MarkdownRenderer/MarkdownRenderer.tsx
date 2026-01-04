@@ -63,6 +63,18 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return '/alexandria.png'
     }
 
+    // For other relative paths in production, add base path
+    if (!src.startsWith('/') && !src.startsWith('http')) {
+      const pathname = window.location.pathname
+      const hostname = window.location.hostname
+      
+      if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
+        // In production, prepend base path
+        console.log('🔍 convertImagePath - PRODUCTION: Adding base path to:', src)
+        return `/alexandria/${src.replace(/^\.\//, '')}`
+      }
+    }
+
     console.log('🔍 convertImagePath - No special handling, returning:', src)
     return src
   }
@@ -78,12 +90,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
       
       if (isProduction) {
-        // Production: try production path first, then dev path as fallback
+        // Production: try multiple production paths
         fallbacks.push('/alexandria/alexandria.png')
+        fallbacks.push('/alexandria/public/alexandria.png')
         fallbacks.push('/alexandria.png')
       } else {
-        // Development: try dev path first, then production path as fallback
+        // Development: try dev paths
         fallbacks.push('/alexandria.png')
+        fallbacks.push('/public/alexandria.png')
         fallbacks.push('/alexandria/alexandria.png')
       }
       
