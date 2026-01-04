@@ -43,7 +43,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
     // Special handling for Alexandria logo with multiple fallback paths
     if (src.includes('alexandria.png')) {
-      return '/alexandria.png' // Primary path in public directory
+      // For local Alexandria README, use the public path directly
+      if (!repositoryContext || (repositoryContext.owner === 'runawaydevil' && repositoryContext.repo === 'alexandria')) {
+        return '/alexandria.png' // Primary path in public directory
+      }
+      // For other repositories, try GitHub raw URL first
+      return `https://raw.githubusercontent.com/${repositoryContext.owner}/${repositoryContext.repo}/${repositoryContext.ref}/public/alexandria.png`
     }
 
     // If we have repository context, convert relative paths
@@ -53,9 +58,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       // Handle relative paths with improved resolution
       let resolvedPath = src
       if (src.startsWith('./')) {
-        // Same directory
-        const currentDir = path.includes('/') ? path.substring(0, path.lastIndexOf('/')) : ''
-        resolvedPath = currentDir ? `${currentDir}/${src.substring(2)}` : src.substring(2)
+        // Same directory - handle ./public/alexandria.png case
+        if (src === './public/alexandria.png') {
+          resolvedPath = 'public/alexandria.png'
+        } else {
+          const currentDir = path.includes('/') ? path.substring(0, path.lastIndexOf('/')) : ''
+          resolvedPath = currentDir ? `${currentDir}/${src.substring(2)}` : src.substring(2)
+        }
       } else if (src.startsWith('../')) {
         // Parent directory - improved handling
         const pathParts = path.split('/').slice(0, -1) // Remove filename
@@ -97,6 +106,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       fallbacks.push('/public/alexandria.png')
       fallbacks.push('./public/alexandria.png')
       fallbacks.push('alexandria.png')
+      
+      // If we have repository context, also try GitHub raw URLs
+      if (repositoryContext) {
+        const { owner, repo, ref } = repositoryContext
+        fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/public/alexandria.png`)
+        fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/alexandria.png`)
+      }
+      
       return fallbacks
     }
 
@@ -111,7 +128,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       }
       
       // Try common directories
-      const commonDirs = ['assets', 'images', 'img', 'docs', '.github']
+      const commonDirs = ['assets', 'images', 'img', 'docs', '.github', 'public']
       for (const dir of commonDirs) {
         if (filename) {
           fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${dir}/${filename}`)

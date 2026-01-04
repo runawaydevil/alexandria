@@ -191,7 +191,15 @@ const Home: React.FC = () => {
       {/* ConfigurationBanner component kept for potential future use */}
 
       <div className="readme-content">
-        <MarkdownRenderer content={readmeContent} />
+        <MarkdownRenderer 
+          content={readmeContent} 
+          repositoryContext={{
+            owner: 'runawaydevil',
+            repo: 'alexandria',
+            ref: 'main',
+            path: 'README.md'
+          }}
+        />
       </div>
       
       <div className="actions">
