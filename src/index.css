@@ -21,7 +21,19 @@ body {
   margin: 0;
   padding: 0;
   line-height: 1.4;
-  font-family: Arial, sans-serif;
+  font-family: 
+    /* Modern system fonts with Unicode support */
+    -apple-system, BlinkMacSystemFont, 
+    /* Windows fonts with comprehensive Unicode support */
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    /* Linux fonts with Unicode support */
+    "Noto Sans", "Liberation Sans", "DejaVu Sans",
+    /* Additional Unicode fonts */
+    "Helvetica Neue", Helvetica,
+    /* Fallbacks */
+    Arial, sans-serif,
+    /* Emoji and symbol support */
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
   font-size: 12px;
   background-color: var(--background-color);
   color: var(--text-color);
@@ -57,4 +69,53 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Enhanced Unicode font support for specific elements */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
+}
+
+/* Code blocks and monospace elements with Unicode support */
+code, pre, kbd, samp, tt {
+  font-family: 
+    /* Modern monospace fonts with Unicode support */
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
+    /* Windows monospace with Unicode */
+    "Consolas", "Courier New",
+    /* Linux monospace with Unicode */
+    "Liberation Mono", "DejaVu Sans Mono", "Noto Sans Mono",
+    /* Fallbacks */
+    Courier, monospace,
+    /* Emoji support for code */
+    "Apple Color Emoji", "Noto Color Emoji";
+}
+
+/* Ensure proper rendering for different script families */
+.unicode-text {
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
+}
+
+/* Specific support for right-to-left scripts */
+[dir="rtl"], .rtl-text {
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans Arabic", "Noto Sans Hebrew", "Noto Sans",
+    "Liberation Sans", "DejaVu Sans",
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }

@@ -35,29 +35,29 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     content,
     links: [] // Will be populated by LinkRewriter if needed
   } : undefined
-  // Helper function to convert relative paths to GitHub raw URLs
+  // Helper function to convert relative paths with comprehensive fallback strategies
   const convertImagePath = (src: string): string => {
     if (!src || src.startsWith('http') || src.startsWith('data:')) {
       return src
     }
 
-    // Special handling for Alexandria logo
+    // Special handling for Alexandria logo with multiple fallback paths
     if (src.includes('alexandria.png')) {
-      return '/alexandria/alexandria.png'
+      return '/alexandria.png' // Primary path in public directory
     }
 
     // If we have repository context, convert relative paths
     if (repositoryContext && !src.startsWith('/')) {
       const { owner, repo, ref, path } = repositoryContext
       
-      // Handle relative paths
+      // Handle relative paths with improved resolution
       let resolvedPath = src
       if (src.startsWith('./')) {
         // Same directory
         const currentDir = path.includes('/') ? path.substring(0, path.lastIndexOf('/')) : ''
         resolvedPath = currentDir ? `${currentDir}/${src.substring(2)}` : src.substring(2)
       } else if (src.startsWith('../')) {
-        // Parent directory
+        // Parent directory - improved handling
         const pathParts = path.split('/').slice(0, -1) // Remove filename
         const srcParts = src.split('/')
         
@@ -71,7 +71,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         }
         
         const remainingParts = srcParts.slice(upCount)
-        const baseParts = pathParts.slice(0, -upCount)
+        const baseParts = pathParts.slice(0, Math.max(0, pathParts.length - upCount))
         resolvedPath = [...baseParts, ...remainingParts].join('/')
       } else if (!src.startsWith('/')) {
         // Relative to current directory
@@ -83,7 +83,43 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${resolvedPath}`
     }
 
+    // For absolute paths starting with '/', try as-is first
     return src
+  }
+
+  // Helper function to get fallback paths for images
+  const getImageFallbackPaths = (originalSrc: string): string[] => {
+    const fallbacks: string[] = []
+    
+    // Special handling for Alexandria logo
+    if (originalSrc.includes('alexandria.png')) {
+      fallbacks.push('/alexandria.png')
+      fallbacks.push('/public/alexandria.png')
+      fallbacks.push('./public/alexandria.png')
+      fallbacks.push('alexandria.png')
+      return fallbacks
+    }
+
+    // For repository images, try different path variations
+    if (repositoryContext && originalSrc && !originalSrc.startsWith('http')) {
+      const { owner, repo, ref } = repositoryContext
+      
+      // Try root of repository
+      const filename = originalSrc.split('/').pop()
+      if (filename) {
+        fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${filename}`)
+      }
+      
+      // Try common directories
+      const commonDirs = ['assets', 'images', 'img', 'docs', '.github']
+      for (const dir of commonDirs) {
+        if (filename) {
+          fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${dir}/${filename}`)
+        }
+      }
+    }
+
+    return fallbacks
   }
 
   // Helper function to process markdown links using LinkRewriter
@@ -186,13 +222,65 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           img: ({ src, alt }) => {
             // Convert image path
             const imageSrc = convertImagePath(src || '')
+            const fallbackPaths = getImageFallbackPaths(src || '')
             
-            // Se é a logo da Alexandria, centralizar e ajustar tamanho
-            const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || src?.includes('alexandria.png')
+            // Check if it's Alexandria logo for special styling
+            const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
+                                   src?.includes('alexandria.png') ||
+                                   alt?.toLowerCase().includes('alexandria')
+            
+            // State to track current fallback index
+            const [currentSrcIndex, setCurrentSrcIndex] = React.useState(0)
+            const [currentSrc, setCurrentSrc] = React.useState(imageSrc)
+            const [hasError, setHasError] = React.useState(false)
+            
+            // Handle image load errors with fallback strategy
+            const handleImageError = React.useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+              const target = e.target as HTMLImageElement
+              
+              // Try next fallback path
+              if (currentSrcIndex < fallbackPaths.length) {
+                const nextSrc = fallbackPaths[currentSrcIndex]
+                setCurrentSrc(nextSrc)
+                setCurrentSrcIndex(prev => prev + 1)
+                target.src = nextSrc
+              } else {
+                // All fallbacks exhausted
+                setHasError(true)
+                console.warn(`Failed to load image: ${src}. All fallback paths exhausted.`)
+              }
+            }, [currentSrcIndex, fallbackPaths, src])
+            
+            // Reset state when src changes
+            React.useEffect(() => {
+              setCurrentSrcIndex(0)
+              setCurrentSrc(imageSrc)
+              setHasError(false)
+            }, [imageSrc])
+            
+            // If all fallbacks failed, show alt text or hide
+            if (hasError) {
+              return alt ? (
+                <div 
+                  className="md-img-error"
+                  style={{
+                    display: 'block',
+                    margin: '12px auto',
+                    padding: '8px',
+                    border: '1px dashed #ccc',
+                    textAlign: 'center',
+                    color: '#666',
+                    fontStyle: 'italic'
+                  }}
+                >
+                  {alt}
+                </div>
+              ) : null
+            }
             
             return (
               <img 
-                src={imageSrc} 
+                src={currentSrc} 
                 alt={alt} 
                 className="md-img"
                 loading="lazy"
@@ -206,12 +294,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                   display: 'block',
                   margin: '12px auto'
                 }}
-                onError={(e) => {
-                  // Tentar caminho alternativo para Alexandria logo
-                  const target = e.target as HTMLImageElement
-                  if (target.src.includes('alexandria.png')) {
-                    target.src = '/alexandria.png'
-                  }
+                onError={handleImageError}
+                onLoad={() => {
+                  // Reset error state on successful load
+                  setHasError(false)
                 }}
               />
             )

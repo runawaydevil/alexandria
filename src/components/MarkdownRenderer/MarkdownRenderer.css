@@ -4,6 +4,16 @@
   font-size: 12px;
   color: var(--text-color);
   background-color: var(--background-color);
+  /* Inherit comprehensive Unicode font support from global styles */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 /* Headings */
@@ -14,6 +24,16 @@
   margin: 16px 0 8px 0;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 4px;
+  /* Ensure Unicode support for headings */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-h2 {
@@ -23,6 +43,16 @@
   margin: 14px 0 6px 0;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
+  /* Ensure Unicode support for headings */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-h3 {
@@ -30,6 +60,16 @@
   font-weight: bold;
   color: var(--text-color);
   margin: 12px 0 4px 0;
+  /* Ensure Unicode support for headings */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-h4 {
@@ -37,6 +77,16 @@
   font-weight: bold;
   color: var(--text-color);
   margin: 10px 0 4px 0;
+  /* Ensure Unicode support for headings */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-h5 {
@@ -44,6 +94,16 @@
   font-weight: bold;
   color: var(--text-color);
   margin: 8px 0 2px 0;
+  /* Ensure Unicode support for headings */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-h6 {
@@ -51,41 +111,81 @@
   font-weight: bold;
   color: var(--text-secondary);
   margin: 8px 0 2px 0;
+  /* Ensure Unicode support for headings */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 /* Text elements */
 .md-p {
   margin: 4px 0;
   color: var(--text-color);
+  /* Ensure Unicode support for paragraphs */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-strong {
   font-weight: bold;
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 .md-em {
   font-style: italic;
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 .md-del {
   text-decoration: line-through;
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 /* Lists */
 .md-ul, .md-ol {
   margin: 8px 0;
   padding-left: 20px;
+  /* Ensure Unicode support for lists */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-li {
   margin: 2px 0;
   color: var(--text-color);
+  /* Inherit Unicode font support from parent */
+  font-family: inherit;
 }
 
 /* Links */
 .md-link {
   color: var(--primary-color);
   text-decoration: underline;
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 .md-link:hover {
@@ -94,19 +194,27 @@
 
 .md-external-link {
   color: var(--primary-color);
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 .md-internal-link {
   color: var(--primary-color);
   font-weight: bold;
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 .md-anchor-link {
   color: var(--primary-color);
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 .md-relative-link {
   color: var(--text-secondary);
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 /* Images */
@@ -118,13 +226,33 @@
   display: block;
 }
 
+.md-img-error {
+  max-width: 100%;
+  height: auto;
+  border: 1px dashed var(--border-color);
+  margin: 8px auto;
+  display: block;
+  padding: 8px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  background-color: var(--background-color);
+}
+
 /* Code */
 .md-code-inline {
   background-color: var(--background-color);
   border: 1px solid var(--border-color);
   padding: 1px 4px;
-  font-family: 'Courier New', monospace;
   font-size: 11px;
+  /* Comprehensive Unicode support for inline code */
+  font-family: 
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
+    "Consolas", "Courier New",
+    "Liberation Mono", "DejaVu Sans Mono", "Noto Sans Mono",
+    "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    Courier, monospace,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-pre {
@@ -133,31 +261,59 @@
   padding: 8px;
   margin: 8px 0;
   overflow-x: auto;
-  font-family: 'Courier New', monospace;
   font-size: 11px;
+  /* Comprehensive Unicode support for code blocks */
+  font-family: 
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
+    "Consolas", "Courier New",
+    "Liberation Mono", "DejaVu Sans Mono", "Noto Sans Mono",
+    "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    Courier, monospace,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-code-block {
-  font-family: 'Courier New', monospace;
   font-size: 11px;
+  /* Comprehensive Unicode support for code blocks */
+  font-family: 
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
+    "Consolas", "Courier New",
+    "Liberation Mono", "DejaVu Sans Mono", "Noto Sans Mono",
+    "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    Courier, monospace,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 /* Tables */
 .md-table-wrapper {
   overflow-x: auto;
   margin: 8px 0;
+  /* Ensure Unicode support for table wrapper */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 .md-table {
   border-collapse: collapse;
   width: 100%;
   font-size: 11px;
+  /* Inherit Unicode font support from wrapper */
+  font-family: inherit;
 }
 
 .md-th, .md-td {
   border: 1px solid var(--border-color);
   padding: 4px 8px;
   text-align: left;
+  /* Inherit Unicode font support */
+  font-family: inherit;
 }
 
 .md-th {
@@ -176,6 +332,16 @@
   padding-left: 12px;
   color: var(--text-secondary);
   font-style: italic;
+  /* Ensure Unicode support for blockquotes */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
 }
 
 /* Horizontal rule */
@@ -228,4 +394,54 @@
   .md-table-wrapper {
     font-size: 10px;
   }
+}
+
+/* Additional Unicode support classes */
+.md-unicode-text {
+  /* Enhanced Unicode support for mixed-script content */
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans Thai",
+    "Liberation Sans", "DejaVu Sans",
+    "Helvetica Neue", Helvetica,
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
+}
+
+/* Right-to-left script support */
+.md-rtl-text {
+  direction: rtl;
+  text-align: right;
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans Arabic", "Noto Sans Hebrew", "Noto Sans",
+    "Liberation Sans", "DejaVu Sans",
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
+}
+
+/* CJK (Chinese, Japanese, Korean) specific support */
+.md-cjk-text {
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Sans CJK SC", "Noto Sans CJK JP", "Noto Sans CJK KR",
+    "Hiragino Sans", "Yu Gothic", "Malgun Gothic",
+    "Liberation Sans", "DejaVu Sans",
+    Arial, sans-serif,
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji";
+}
+
+/* Emoji and symbol enhancement */
+.md-emoji-text {
+  font-family: 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Apple Color Emoji", "Noto Color Emoji", "Noto Emoji",
+    "Twemoji Mozilla", "EmojiOne Color",
+    "Noto Sans", "Liberation Sans", "DejaVu Sans",
+    Arial, sans-serif;
 }

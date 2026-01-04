@@ -4,7 +4,8 @@ import { createServices } from '../../services'
 import { configurationManager } from '../../services'
 import { RandomEngine } from '../../services/RandomEngine'
 import MarkdownRenderer from '../../components/MarkdownRenderer/MarkdownRenderer'
-import ConfigurationBanner from '../../components/ConfigurationBanner/ConfigurationBanner'
+// ConfigurationBanner import removed - component kept for potential future use
+// import ConfigurationBanner from '../../components/ConfigurationBanner/ConfigurationBanner'
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay'
 import { ConfigurationError, ConfigurationErrorHandler, ConfigurationErrorType } from '../../types/ConfigurationError'
 import './Home.css'
@@ -186,13 +187,8 @@ const Home: React.FC = () => {
 
   return (
     <div className="home">
-      {/* Configuration Banner for custom configurations */}
-      {configurationManager.isUsingCustomConfig() && !error && (
-        <ConfigurationBanner 
-          owner={configurationManager.getDefaultRepository().owner}
-          repo={configurationManager.getDefaultRepository().repo}
-        />
-      )}
+      {/* Configuration Banner removed per requirements 1.1, 1.2, 1.3 */}
+      {/* ConfigurationBanner component kept for potential future use */}
 
       <div className="readme-content">
         <MarkdownRenderer content={readmeContent} />
