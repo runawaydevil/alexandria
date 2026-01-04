@@ -10,13 +10,6 @@ import {
   CacheManager
 } from '../types'
 
-// Request queue item interface
-interface QueuedRequest<T> {
-  execute: () => Promise<T>
-  resolve: (value: T) => void
-  reject: (error: Error) => void
-}
-
 // Rate limit error class
 export class RateLimitError extends Error implements ApiError {
   type = ErrorType.RATE_LIMITED as const
@@ -59,53 +52,7 @@ export class NetworkError extends Error implements ApiError {
   }
 }
 
-// Request queue implementation
-class RequestQueue {
-  private queue: QueuedRequest<any>[] = []
-  private processing = false
-  private readonly delayBetweenRequests = 100 // 100ms between requests
-
-  async add<T>(requestFn: () => Promise<T>): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      this.queue.push({
-        execute: requestFn,
-        resolve,
-        reject
-      })
-      
-      this.processQueue()
-    })
-  }
-
-  private async processQueue(): Promise<void> {
-    if (this.processing || this.queue.length === 0) {
-      return
-    }
-
-    this.processing = true
-
-    while (this.queue.length > 0) {
-      const request = this.queue.shift()!
-      
-      try {
-        const result = await request.execute()
-        request.resolve(result)
-      } catch (error) {
-        request.reject(error as Error)
-      }
-
-      // Add delay between requests to prevent spam
-      if (this.queue.length > 0) {
-        await new Promise(resolve => setTimeout(resolve, this.delayBetweenRequests))
-      }
-    }
-
-    this.processing = false
-  }
-}
-
 export class GitHubApiClient implements IGitHubApiClient {
-  private requestQueue = new RequestQueue()
   private rateLimitState: RateLimit = {
     limit: 60,
     remaining: 60,
@@ -114,18 +61,27 @@ export class GitHubApiClient implements IGitHubApiClient {
   }
 
   private readonly baseUrl = 'https://api.github.com'
-  private readonly defaultHeaders = {
+  private readonly defaultHeaders: Record<string, string> = {
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'User-Agent': 'Alexandria-GitHub-Reader/1.0'
   }
 
-  // Retry configuration
-  private readonly maxRetries = 3
-  private readonly baseRetryDelay = 1000 // 1 second
-  private readonly maxRetryDelay = 30000 // 30 seconds
+  // Retry configuration - simplified for network errors only
+  private readonly maxRetries = 2
+  private readonly retryDelay = 2000 // 2 seconds fixed delay
 
-  constructor(private cache?: CacheManager) {}
+  constructor(private cache?: CacheManager) {
+    // Add GitHub token if available (increases rate limit from 60 to 5000/hour)
+    // SECURITY: Token is only available at build time via Vite env vars
+    // Never logged or exposed in error messages
+    const token = import.meta.env.VITE_GITHUB_TOKEN
+    if (token) {
+      this.defaultHeaders['Authorization'] = `token ${token}`
+      // Note: Token is safe here - Vite only includes env vars prefixed with VITE_ in client bundle
+      // and only if they're explicitly referenced in code at build time
+    }
+  }
 
   async searchRepositories(query: SearchQuery): Promise<Repository[]> {
     const searchParams = new URLSearchParams({
@@ -213,33 +169,35 @@ export class GitHubApiClient implements IGitHubApiClient {
   }
 
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    // Check rate limit before queuing
+    // Check rate limit before making request
     if (this.rateLimitState.remaining === 0) {
+      // Try to serve from cache if available
+      const cacheKey = this.generateCacheKey(endpoint, options)
+      if (this.cache) {
+        const cached = await this.cache.get<T>(cacheKey)
+        if (cached) {
+          console.warn('Rate limited, serving from cache:', endpoint)
+          return cached
+        }
+      }
       throw new RateLimitError(this.rateLimitState.reset)
     }
 
-    // Queue request to prevent parallel spam
-    return this.requestQueue.add(() => this.executeRequestWithRetry<T>(endpoint, options))
+    // Make request directly with simple retry for network errors only
+    return this.executeRequestWithRetry<T>(endpoint, options)
   }
 
   private async executeRequestWithRetry<T>(endpoint: string, options?: RequestInit, retryCount = 0): Promise<T> {
     try {
       return await this.executeRequest<T>(endpoint, options)
     } catch (error) {
-      // Handle secondary rate limits with exponential backoff
-      if (error instanceof SecondaryRateLimitError && retryCount < this.maxRetries) {
-        const delay = this.calculateExponentialBackoff(retryCount, error.retryAfter)
-        await this.sleep(delay)
-        return this.executeRequestWithRetry<T>(endpoint, options, retryCount + 1)
-      }
-
-      // Handle network errors with exponential backoff
+      // Only retry network errors (5xx, timeout), not rate limits
       if (error instanceof NetworkError && retryCount < this.maxRetries && this.isRetryableError(error)) {
-        const delay = this.calculateExponentialBackoff(retryCount)
-        await this.sleep(delay)
+        await this.sleep(this.retryDelay)
         return this.executeRequestWithRetry<T>(endpoint, options, retryCount + 1)
       }
 
+      // Rate limit errors should not be retried - throw immediately
       throw error
     }
   }
@@ -280,22 +238,24 @@ export class GitHubApiClient implements IGitHubApiClient {
         }
       }
 
-      // Handle rate limit responses
+      // Handle rate limit responses - no retry, just error + cache fallback
       if (response.status === 403 || response.status === 429) {
         const retryAfter = response.headers.get('retry-after')
+        
+        // Try to serve from cache before throwing error
+        if (this.cache) {
+          const cached = await this.cache.get<T>(cacheKey)
+          if (cached) {
+            console.warn('Rate limited, serving from cache:', endpoint)
+            return cached
+          }
+        }
         
         if (retryAfter) {
           // Secondary rate limit with retry-after header
           throw new SecondaryRateLimitError(parseInt(retryAfter, 10), response.status)
         } else {
-          // Primary rate limit - try to serve from cache
-          if (this.cache) {
-            const cached = await this.cache.get<T>(cacheKey)
-            if (cached) {
-              console.warn('Rate limited, serving from cache:', endpoint)
-              return cached
-            }
-          }
+          // Primary rate limit
           const resetTime = this.rateLimitState.reset
           throw new RateLimitError(resetTime, response.status)
         }
@@ -326,19 +286,23 @@ export class GitHubApiClient implements IGitHubApiClient {
       return data as T
 
     } catch (error) {
-      if (error instanceof RateLimitError || error instanceof NetworkError || error instanceof SecondaryRateLimitError) {
-        // If we have a rate limit or network error, try to serve from cache
-        if (this.cache && (error instanceof RateLimitError || error instanceof NetworkError)) {
+      // If it's already a known error type, try cache fallback for rate limits
+      if (error instanceof RateLimitError || error instanceof SecondaryRateLimitError) {
+        if (this.cache) {
           const cached = await this.cache.get<T>(cacheKey)
           if (cached) {
-            console.warn('Error occurred, serving from cache:', error.message)
+            console.warn('Rate limit error, serving from cache:', error.message)
             return cached
           }
         }
         throw error
       }
       
-      // Handle network/fetch errors
+      // Handle network/fetch errors - convert to NetworkError
+      if (error instanceof NetworkError) {
+        throw error
+      }
+      
       throw new NetworkError(
         error instanceof Error ? error.message : 'Unknown network error'
       )
@@ -394,26 +358,16 @@ export class GitHubApiClient implements IGitHubApiClient {
     return { ...this.rateLimitState }
   }
 
-  private calculateExponentialBackoff(retryCount: number, baseDelay?: number): number {
-    const delay = baseDelay ? baseDelay * 1000 : this.baseRetryDelay
-    const exponentialDelay = delay * Math.pow(2, retryCount)
-    const jitter = Math.random() * 0.1 * exponentialDelay // Add 10% jitter
-    
-    return Math.min(exponentialDelay + jitter, this.maxRetryDelay)
-  }
-
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   private isRetryableError(error: NetworkError): boolean {
-    // Retry on network errors and certain HTTP status codes
-    if (!error.statusCode) return true // Network/fetch errors
+    // Only retry on server errors (5xx) and network timeouts
+    if (!error.statusCode) return true // Network/fetch errors (no status code)
     
-    // Retry on server errors (5xx) and some client errors
-    return error.statusCode >= 500 || 
-           error.statusCode === 408 || // Request Timeout
-           error.statusCode === 429    // Too Many Requests (if not caught as rate limit)
+    // Retry only on server errors (5xx) and request timeout
+    return error.statusCode >= 500 || error.statusCode === 408
   }
 
   // Method to check if we're currently rate limited

@@ -4,6 +4,14 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
+
+# Security: Never commit tokens or secrets
+*.key
+*.pem
+*.secret
+secrets/
+.secrets/
 
 # Dependencies
 node_modules/
@@ -29,3 +37,4 @@ yarn-debug.log*
 yarn-error.log*
 
 .kiro
+.cursor

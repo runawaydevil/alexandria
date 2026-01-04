@@ -78,6 +78,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           rehypeRaw, // Process raw HTML
           [rehypeSanitize, {
             // Allow HTML tags needed for README
+            // SECURITY: Only safe tags allowed, no script, iframe, object, embed, etc.
             tagNames: [
               // Default markdown tags
               'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -87,13 +88,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               'table', 'thead', 'tbody', 'tr', 'th', 'td',
               'a', 'img',
               'hr',
-              // Additional HTML tags for README
-              'div', 'span', 'center'
+              // Additional HTML tags for README (limited set)
+              'div', 'span'
             ],
             attributes: {
-              // Allow all standard attributes
-              '*': ['className', 'id', 'style'],
-              'a': ['href', 'target', 'rel'],
+              // SECURITY: Restrictive attribute whitelist
+              '*': ['className', 'id'],
+              // Note: 'style' removed from whitelist for security (prevents XSS via inline styles)
+              'a': ['href', 'target', 'rel', 'title'],
               'img': ['src', 'alt', 'width', 'height', 'title'],
               'div': ['align'],
               'h1': ['id'],
@@ -102,6 +104,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               'h4': ['id'],
               'h5': ['id'],
               'h6': ['id']
+            },
+            // SECURITY: Protocol whitelist for links and images
+            protocols: {
+              'a': {
+                href: ['http', 'https', 'mailto']
+              },
+              'img': {
+                src: ['http', 'https', 'data'] // data: URLs allowed for base64 images
+              }
             }
           }],
           rehypeHighlight // Syntax highlighting
@@ -172,11 +183,17 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           pre: ({ children }) => <pre className="md-pre">{children}</pre>,
           a: ({ href, children }) => {
             const linkProps = processMarkdownLink(href || '')
+            // SECURITY: Ensure external links always have security attributes
+            const finalProps = {
+              ...linkProps,
+              className: "md-link",
+              // Add rel="noopener noreferrer" for external links if not already present
+              rel: linkProps.href?.startsWith('http') && !linkProps.rel 
+                ? 'noopener noreferrer' 
+                : linkProps.rel
+            }
             return (
-              <a 
-                {...linkProps}
-                className="md-link"
-              >
+              <a {...finalProps}>
                 {children}
               </a>
             )

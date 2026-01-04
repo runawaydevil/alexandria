@@ -9,6 +9,7 @@ import MarkdownRenderer from '../../components/MarkdownRenderer/MarkdownRenderer
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay'
 import { ConfigurationError, ConfigurationErrorHandler, ConfigurationErrorType } from '../../types/ConfigurationError'
 import { decodeBase64ToUTF8 } from '../../utils/base64Decoder'
+import { validateRepositoryParams } from '../../utils/validationUtils'
 import './Home.css'
 
 const Home: React.FC = () => {
@@ -18,6 +19,7 @@ const Home: React.FC = () => {
   const [error, setError] = useState<ConfigurationError | string | null>(null)
   const [readmeContent, setReadmeContent] = useState<string>('')
   const [repoInput, setRepoInput] = useState('')
+  const [rateLimitError, setRateLimitError] = useState<RateLimitError | SecondaryRateLimitError | null>(null)
   
   const { randomEngine, apiClient } = createServices()
 
@@ -113,6 +115,7 @@ const Home: React.FC = () => {
   const handleRandomClick = async () => {
     setIsLoading(true)
     setError(null)
+    setRateLimitError(null)
     
     try {
       // Get default filters for random discovery
@@ -129,7 +132,14 @@ const Home: React.FC = () => {
       
     } catch (err) {
       console.error('Random discovery failed:', err)
-      setError(err instanceof Error ? err.message : 'Failed to discover content')
+      
+      // Handle rate limit errors specially - show warning instead of error
+      if (isRateLimitError(err)) {
+        setRateLimitError(err as RateLimitError | SecondaryRateLimitError)
+        // Don't set error state, just show the warning banner
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to discover content')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -172,8 +182,15 @@ const Home: React.FC = () => {
       return
     }
 
+    // Validate and sanitize input before navigation
+    const validation = validateRepositoryParams(owner, repo)
+    if (!validation.valid) {
+      setError(validation.error || 'Invalid repository format')
+      return
+    }
+
     // Navigate to repository
-    navigate(`/r/${owner}/${repo}`)
+    navigate(`/r/${validation.owner}/${validation.repo}`)
   }
 
   if (isLoadingReadme) {
@@ -204,7 +221,14 @@ const Home: React.FC = () => {
       </div>
       
       <div className="actions">
-        {error && (
+        {rateLimitError && (
+          <RateLimitWarning 
+            error={rateLimitError} 
+            onDismiss={() => setRateLimitError(null)}
+          />
+        )}
+        
+        {error && !rateLimitError && (
           <ErrorDisplay
             error={error}
             onRetry={handleRetryLoad}

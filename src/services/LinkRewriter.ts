@@ -1,4 +1,5 @@
 import { DocumentContext, MarkdownLink } from '../types'
+import { isValidRepoPath } from '../utils/validationUtils'
 
 /**
  * LinkRewriter handles intelligent transformation of markdown links
@@ -60,14 +61,17 @@ export class LinkRewriter {
 
   /**
    * Resolve relative path based on current document path
+   * Includes security validation to prevent path traversal
    */
   private resolveRelativePath(href: string, currentPath: string): string {
+    let resolvedPath: string
+    
     // Handle different types of relative paths
     if (href.startsWith('./')) {
       // Same directory
       const currentDir = currentPath.includes('/') ? 
         currentPath.substring(0, currentPath.lastIndexOf('/')) : ''
-      return currentDir ? `${currentDir}/${href.substring(2)}` : href.substring(2)
+      resolvedPath = currentDir ? `${currentDir}/${href.substring(2)}` : href.substring(2)
     } else if (href.startsWith('../')) {
       // Parent directory navigation
       const pathParts = currentPath.split('/').slice(0, -1) // Remove filename
@@ -82,15 +86,29 @@ export class LinkRewriter {
         }
       }
       
-      const remainingParts = hrefParts.slice(upCount)
-      const baseParts = pathParts.slice(0, Math.max(0, pathParts.length - upCount))
-      return [...baseParts, ...remainingParts].join('/')
+      // Prevent going above repository root
+      if (upCount > pathParts.length) {
+        // Too many .., return root path
+        resolvedPath = hrefParts.slice(upCount).join('/')
+      } else {
+        const remainingParts = hrefParts.slice(upCount)
+        const baseParts = pathParts.slice(0, Math.max(0, pathParts.length - upCount))
+        resolvedPath = [...baseParts, ...remainingParts].join('/')
+      }
     } else {
       // Relative to current directory (no ./ prefix)
       const currentDir = currentPath.includes('/') ? 
         currentPath.substring(0, currentPath.lastIndexOf('/')) : ''
-      return currentDir ? `${currentDir}/${href}` : href
+      resolvedPath = currentDir ? `${currentDir}/${href}` : href
     }
+    
+    // Validate resolved path to prevent path traversal attacks
+    if (!isValidRepoPath(resolvedPath)) {
+      // If path is invalid, return original href (will likely fail but safely)
+      return href
+    }
+    
+    return resolvedPath
   }
 
   /**

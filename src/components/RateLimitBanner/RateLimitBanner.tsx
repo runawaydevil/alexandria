@@ -21,12 +21,15 @@ const RateLimitBanner: React.FC<RateLimitBannerProps> = ({ className }) => {
   }, [])
 
   useEffect(() => {
+    // Always show banner when rate limit is critical (0 remaining)
+    // Show warning when remaining <= 10
     if (rateLimit && rateLimit.remaining <= 10) {
       setIsVisible(true)
       const countdownInterval = setInterval(updateCountdown, 1000)
       
       return () => clearInterval(countdownInterval)
     } else {
+      // Only hide if not critical (remaining > 10)
       setIsVisible(false)
     }
   }, [rateLimit])
@@ -80,6 +83,10 @@ const RateLimitBanner: React.FC<RateLimitBannerProps> = ({ className }) => {
   }
 
   const handleDismiss = () => {
+    // Don't allow dismissing when rate limit is critical (0 remaining)
+    if (rateLimit && rateLimit.remaining === 0) {
+      return
+    }
     setIsVisible(false)
   }
 
@@ -119,19 +126,28 @@ const RateLimitBanner: React.FC<RateLimitBannerProps> = ({ className }) => {
           
           {rateLimit.remaining === 0 && (
             <div className="rate-limit-message">
-              Using cached content while waiting for rate limit reset
+              <strong>Rate limit reached.</strong> The app will use cached content when available. 
+              New requests will be blocked until the rate limit resets. Please wait before trying again.
+            </div>
+          )}
+          
+          {rateLimit.remaining > 0 && rateLimit.remaining <= 10 && (
+            <div className="rate-limit-message">
+              <strong>Warning:</strong> Approaching rate limit. Consider waiting before making more requests.
             </div>
           )}
         </div>
         
-        <button
-          className="rate-limit-dismiss"
-          onClick={handleDismiss}
-          aria-label="Dismiss rate limit banner"
-          title="Dismiss this notification"
-        >
-          ✕
-        </button>
+        {rateLimit && rateLimit.remaining > 0 && (
+          <button
+            className="rate-limit-dismiss"
+            onClick={handleDismiss}
+            aria-label="Dismiss rate limit banner"
+            title="Dismiss this notification"
+          >
+            ✕
+          </button>
+        )}
       </div>
       
       <div className="rate-limit-progress">

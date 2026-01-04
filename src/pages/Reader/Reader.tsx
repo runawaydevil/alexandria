@@ -10,6 +10,10 @@ import Breadcrumb from '../../components/Breadcrumb/Breadcrumb'
 import { FileContent, Repository } from '../../types'
 import { DocumentToc as DocumentTocType, RepositoryToc as RepositoryTocType } from '../../services/TocGenerator'
 import { decodeBase64ToUTF8 } from '../../utils/base64Decoder'
+import { validateRepositoryParams, sanitizeRepoPath, sanitizeRef } from '../../utils/validationUtils'
+import { isRateLimitError } from '../../utils/errorUtils'
+import { RateLimitError, SecondaryRateLimitError } from '../../services/GitHubApiClient'
+import RateLimitWarning from '../../components/RateLimitWarning/RateLimitWarning'
 import './Reader.css'
 
 const Reader: React.FC = () => {
@@ -24,11 +28,33 @@ const Reader: React.FC = () => {
   const [documentToc, setDocumentToc] = useState<DocumentTocType | null>(null)
   const [repositoryToc, setRepositoryToc] = useState<RepositoryTocType | null>(null)
   const [isLoadingToc, setIsLoadingToc] = useState(false)
+  const [rateLimitError, setRateLimitError] = useState<RateLimitError | SecondaryRateLimitError | null>(null)
   
   const { apiClient, randomEngine, cache, tocGenerator } = createServices()
 
   useEffect(() => {
     if (owner && repo) {
+      // Validate URL parameters before loading
+      const validation = validateRepositoryParams(owner, repo)
+      if (!validation.valid) {
+        setError(validation.error || 'Invalid repository parameters')
+        return
+      }
+      
+      // Sanitize path and ref
+      const sanitizedPath = path ? sanitizeRepoPath(path) : null
+      const sanitizedRef = ref ? sanitizeRef(ref) : null
+      
+      // If sanitization failed, show error
+      if (path && !sanitizedPath) {
+        setError('Invalid file path')
+        return
+      }
+      if (ref && !sanitizedRef) {
+        setError('Invalid branch/tag reference')
+        return
+      }
+      
       loadContent()
     }
   }, [owner, repo, ref, path])
@@ -36,9 +62,17 @@ const Reader: React.FC = () => {
   const loadContent = async () => {
     if (!owner || !repo) return
 
+    // Validate parameters again before API call
+    const validation = validateRepositoryParams(owner, repo)
+    if (!validation.valid) {
+      setError(validation.error || 'Invalid repository parameters')
+      return
+    }
+
     try {
       setIsLoading(true)
       setError(null)
+      setRateLimitError(null) // Clear any previous rate limit errors
 
       // Load repository info
       const repository = await apiClient.getRepository(owner, repo)
@@ -91,6 +125,36 @@ const Reader: React.FC = () => {
 
     } catch (err) {
       console.error('Failed to load content:', err)
+      
+      // Handle rate limit errors specially - navigate back to previous repository
+      if (isRateLimitError(err)) {
+        setRateLimitError(err as RateLimitError | SecondaryRateLimitError)
+        
+        // Try to get previous item from history
+        try {
+          const history = await cache.getReadingHistory()
+          if (history.length > 0) {
+            // Get the first item (most recent, excluding current)
+            const previousItem = history[0]
+            const previousPath = `/r/${previousItem.owner}/${previousItem.repo}/blob/${previousItem.ref}/${previousItem.path}`
+            
+            // Navigate back to previous repository
+            navigate(previousPath, { replace: true })
+            return // Don't set error state, let the previous page load
+          } else {
+            // No history, go to home
+            navigate('/', { replace: true })
+            return
+          }
+        } catch (historyError) {
+          console.warn('Failed to get navigation history:', historyError)
+          // Fallback to home if history fails
+          navigate('/', { replace: true })
+          return
+        }
+      }
+      
+      // For non-rate-limit errors, show error page
       setError(err instanceof Error ? err.message : 'Failed to load content')
     } finally {
       setIsLoading(false)
@@ -142,7 +206,9 @@ const Reader: React.FC = () => {
     )
   }
 
-  if (error) {
+  // Don't show error page for rate limit - it's handled by navigation fallback
+  // Only show error page for other types of errors
+  if (error && !rateLimitError) {
     return (
       <div className="reader">
         <div className="error">
@@ -202,7 +268,14 @@ const Reader: React.FC = () => {
         </div>
       </div>
       
-      {error && (
+      {rateLimitError && (
+        <RateLimitWarning 
+          error={rateLimitError} 
+          onDismiss={() => setRateLimitError(null)}
+        />
+      )}
+      
+      {error && !rateLimitError && (
         <div className="error-message">
           <p>❌ {error}</p>
           <button onClick={() => setError(null)} className="dismiss-error">
