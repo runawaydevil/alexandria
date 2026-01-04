@@ -43,7 +43,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
     // Special handling for Alexandria logo
     if (src.includes('alexandria.png')) {
-      return '/Alexandria/alexandria.png'
+      return '/alexandria/alexandria.png'
     }
 
     // If we have repository context, convert relative paths

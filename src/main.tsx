@@ -26,9 +26,9 @@ const getBasename = (): string => {
   const pathname = window.location.pathname;
   const hostname = window.location.hostname;
   
-  // If pathname starts with /Alexandria, use it as basename (GitHub Pages)
-  if (pathname.startsWith('/Alexandria')) {
-    return '/Alexandria';
+  // If pathname starts with /alexandria, use it as basename (GitHub Pages - matches repo name)
+  if (pathname.startsWith('/alexandria')) {
+    return '/alexandria';
   }
   
   // If we're on GitHub Pages (github.io) and pathname is root, check if we have a redirect from 404.html
@@ -37,8 +37,8 @@ const getBasename = (): string => {
     const searchParams = new URLSearchParams(window.location.search);
     const redirectPath = searchParams.get('/');
     if (redirectPath) {
-      // We're being redirected from 404.html, use /Alexandria as basename
-      return '/Alexandria';
+      // We're being redirected from 404.html, use /alexandria as basename
+      return '/alexandria';
     }
   }
   

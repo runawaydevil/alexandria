@@ -94,9 +94,9 @@ const configurationValidationPlugin = () => {
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // Use '/Alexandria/' for production (GitHub Pages), './' for relative paths
+  // Use '/alexandria/' for production (GitHub Pages - matches repo name)
   // In dev mode, use '/' for local development
-  const base = mode === 'production' ? '/Alexandria/' : '/';
+  const base = mode === 'production' ? '/alexandria/' : '/';
   
   return {
     plugins: [

@@ -8,7 +8,7 @@ const Header: React.FC = () => {
       <div className="header-content">
         <Link to="/" className="logo-link" aria-label="Alexandria - Home">
           <img 
-            src="/Alexandria/alexandria.png" 
+            src="/alexandria/alexandria.png" 
             alt="Alexandria" 
             className="logo"
             width="32"
