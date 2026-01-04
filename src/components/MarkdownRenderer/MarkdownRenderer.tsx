@@ -180,6 +180,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt, width, height }) => {
+            console.log('🖼️ Processing image:', { src, alt, width, height })
+            
             // Convert relative path from README.md to correct path
             let finalSrc = src || ''
             
@@ -192,13 +194,17 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                 // Development
                 finalSrc = '/alexandria.png'
               }
+              console.log('🔄 Converted alexandria.png path:', finalSrc)
             }
             
             // Check if it's Alexandria logo for special container
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    finalSrc.includes('alexandria.png')
             
+            console.log('🏷️ Is Alexandria logo:', isAlexandriaLogo)
+            
             if (isAlexandriaLogo) {
+              console.log('✨ Rendering Alexandria logo with container')
               return (
                 <div className="alexandria-logo-container">
                   <img 
@@ -207,8 +213,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
                     width={width}
                     height={height}
                     className="alexandria-logo"
-                    onLoad={() => console.log('✅ Alexandria logo loaded:', finalSrc)}
-                    onError={() => console.error('❌ Alexandria logo failed:', finalSrc)}
+                    onLoad={() => console.log('✅ Alexandria logo loaded successfully:', finalSrc)}
+                    onError={(e) => console.error('❌ Alexandria logo failed to load:', finalSrc, e)}
                   />
                 </div>
               )
