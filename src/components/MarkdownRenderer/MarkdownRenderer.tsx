@@ -46,16 +46,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return src
     }
 
-    // FORCE PRODUCTION PATH FOR ALEXANDRIA LOGO
+    // EMERGENCY FIX: Force absolute path for Alexandria logo
     if (src.includes('alexandria.png')) {
       const hostname = window.location.hostname
       debugLog('convertImagePath - Alexandria logo detected, hostname:', hostname)
       
-      // Always use production path for GitHub Pages
+      // ALWAYS use the absolute path that we know works
       if (hostname.includes('github.io')) {
-        const forcedPath = '/alexandria/alexandria.png'
-        debugLog('convertImagePath - FORCING PRODUCTION PATH:', forcedPath)
-        return forcedPath
+        const absolutePath = 'https://runawaydevil.github.io/alexandria/alexandria.png'
+        debugLog('convertImagePath - EMERGENCY: Using absolute URL:', absolutePath)
+        return absolutePath
       }
       
       // Development environment
@@ -341,8 +341,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           div: ({ children, align, ...props }: DivProps) => (
             <div 
               {...props}
-              style={align === 'center' ? { textAlign: 'center' } : undefined}
-              className="md-div"
+              style={align === 'center' ? { 
+                textAlign: 'center',
+                display: 'block',
+                width: '100%',
+                margin: '0 auto'
+              } : undefined}
+              className={`md-div ${align === 'center' ? 'md-div-center' : ''}`}
             >
               {children}
             </div>
@@ -410,6 +415,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             debugLog('MarkdownRenderer - Processing image:', { src, alt })
             debugLog('MarkdownRenderer - Current location:', window.location.href)
             
+            // FORCE LOG FOR ALEXANDRIA LOGO
+            if (src?.includes('alexandria.png')) {
+              console.log('🎯 PROCESSING ALEXANDRIA LOGO:', { src, alt })
+              console.log('🎯 CURRENT LOCATION:', window.location.href)
+            }
+            
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    src?.includes('alexandria.png') ||
@@ -417,6 +428,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             
             debugLog('MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
             debugLog(`MarkdownRenderer - Will convert src from: ${src} to: ${convertImagePath(src || '')}`)
+            
+            // FORCE LOG CONVERTED PATH FOR ALEXANDRIA
+            if (isAlexandriaLogo) {
+              const convertedPath = convertImagePath(src || '')
+              console.log('🎯 ALEXANDRIA LOGO CONVERTED PATH:', convertedPath)
+            }
             
             return <ImageWithFallback src={src || ''} alt={alt} isAlexandriaLogo={!!isAlexandriaLogo} />
           },

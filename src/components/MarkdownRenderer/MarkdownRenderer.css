@@ -128,6 +128,24 @@
   font-family: inherit;
 }
 
+/* Divs */
+.md-div {
+  font-family: inherit;
+}
+
+.md-div-center {
+  text-align: center;
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.md-div-center img {
+  display: block !important;
+  margin: 12px auto !important;
+  text-align: center !important;
+}
+
 /* Images */
 .md-img {
   max-width: 100%;
