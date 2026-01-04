@@ -5,7 +5,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { LinkRewriter } from '../../services/LinkRewriter'
 import { DocumentContext } from '../../types'
-import { debugImageElement, monitorImageElement, debugLog, isDebugMode } from '../../utils/cssDebugger'
+import { debugLog } from '../../utils/cssDebugger'
 import './MarkdownRenderer.css'
 
 interface MarkdownRendererProps {
@@ -84,51 +84,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     return src
   }
 
-  // Helper function to get fallback paths for images - SIMPLIFIED
-  const getImageFallbackPaths = (originalSrc: string): string[] => {
-    const fallbacks: string[] = []
-    
-    // Special handling for Alexandria logo - FORCE CORRECT PATHS
-    if (originalSrc.includes('alexandria.png') || originalSrc.startsWith('./public/')) {
-      const hostname = window.location.hostname
-      
-      if (hostname.includes('github.io')) {
-        // Production: try the exact paths we know work
-        fallbacks.push('/alexandria/alexandria.png')
-        fallbacks.push('/alexandria/public/alexandria.png')
-        // GitHub raw URL as backup
-        fallbacks.push('https://raw.githubusercontent.com/runawaydevil/alexandria/main/public/alexandria.png')
-      } else {
-        // Development: try dev paths
-        fallbacks.push('/alexandria.png')
-        fallbacks.push('/public/alexandria.png')
-      }
-      
-      return fallbacks
-    }
-
-    // For other repository images, keep existing logic
-    if (repositoryContext && originalSrc && !originalSrc.startsWith('http')) {
-      const { owner, repo, ref } = repositoryContext
-      
-      // Try root of repository
-      const filename = originalSrc.split('/').pop()
-      if (filename) {
-        fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${filename}`)
-      }
-      
-      // Try common directories
-      const commonDirs = ['assets', 'images', 'img', 'docs', '.github', 'public']
-      for (const dir of commonDirs) {
-        if (filename) {
-          fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${dir}/${filename}`)
-        }
-      }
-    }
-
-    return fallbacks
-  }
-
   // Helper function to process markdown links using LinkRewriter
   const processMarkdownLink = (href: string): { href: string; target?: string; rel?: string } => {
     if (!href || !documentContext) {
@@ -162,147 +117,76 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     align?: string
   }
 
-  // Image component with fallback support and CSS debugging
+  // EMERGENCY SIMPLE IMAGE COMPONENT
   const ImageWithFallback: React.FC<{ src: string; alt?: string; isAlexandriaLogo: boolean }> = ({ 
     src: originalSrc, 
     alt,
     isAlexandriaLogo 
   }) => {
-    debugLog('ImageWithFallback - Original src:', originalSrc)
-    const imageSrc = convertImagePath(originalSrc)
-    const fallbackPaths = getImageFallbackPaths(originalSrc)
+    console.log('🚨 EMERGENCY IMAGE COMPONENT:', { originalSrc, alt, isAlexandriaLogo })
     
-    // Create complete list of paths to try (main + fallbacks)
-    const allPaths = [imageSrc, ...fallbackPaths]
-    debugLog('ImageWithFallback - All paths to try:', allPaths)
-    
-    const [currentPathIndex, setCurrentPathIndex] = React.useState(0)
-    const [hasError, setHasError] = React.useState(false)
-    const imageRef = React.useRef<HTMLImageElement>(null)
-    
-    // Get current src to display
-    const currentSrc = allPaths[currentPathIndex] || imageSrc
-    
-    // Handle image load errors with fallback strategy
-    const handleImageError = React.useCallback(() => {
-      debugLog('ImageWithFallback - Image error for:', currentSrc)
-      debugLog('ImageWithFallback - Current path index:', `${currentPathIndex} of ${allPaths.length}`)
-      
-      // Debug the failed image element
-      if (imageRef.current && isDebugMode()) {
-        debugImageElement(imageRef.current, `Failed: ${alt || 'Unknown'} - ${currentSrc}`)
-      }
-      
-      // Try next path
-      if (currentPathIndex + 1 < allPaths.length) {
-        const nextIndex = currentPathIndex + 1
-        debugLog('ImageWithFallback - Trying next path:', allPaths[nextIndex])
-        setCurrentPathIndex(nextIndex)
-      } else {
-        // All paths exhausted
-        setHasError(true)
-        console.error('💀 ImageWithFallback - ALL PATHS FAILED for:', originalSrc)
-      }
-    }, [currentPathIndex, allPaths, currentSrc, originalSrc, alt])
-    
-    // Handle successful image load
-    const handleImageLoad = React.useCallback(() => {
-      debugLog('ImageWithFallback - Image loaded successfully:', currentSrc)
-      console.log('🎯 ALEXANDRIA LOGO LOADED:', currentSrc) // Force log even without debug mode
-      setHasError(false)
-      
-      // Perform CSS debugging on successful load
-      if (imageRef.current) {
-        const context = `${isAlexandriaLogo ? 'Alexandria Logo' : 'Image'}: ${alt || 'Unknown'}`
-        
-        // ALWAYS log for Alexandria logo
-        if (isAlexandriaLogo) {
-          console.log('🎯 ALEXANDRIA LOGO ELEMENT:', imageRef.current)
-          console.log('🎯 ALEXANDRIA LOGO COMPUTED STYLES:', window.getComputedStyle(imageRef.current))
-        }
-        
-        // Immediate debug
-        if (isDebugMode()) {
-          debugImageElement(imageRef.current, context)
-        }
-        
-        // Delayed debug to catch any CSS changes
-        setTimeout(() => {
-          if (imageRef.current && isDebugMode()) {
-            debugImageElement(imageRef.current, `${context} (Delayed Check)`)
-          }
-        }, 500)
-      }
-    }, [currentSrc, alt, isAlexandriaLogo])
-    
-    // Reset state when original src changes
-    React.useEffect(() => {
-      setCurrentPathIndex(0)
-      setHasError(false)
-    }, [originalSrc])
-    
-    // Set up monitoring when ref is available
-    React.useEffect(() => {
-      if (imageRef.current && isDebugMode()) {
-        const context = `${isAlexandriaLogo ? 'Alexandria Logo' : 'Image'}: ${alt || 'Unknown'}`
-        monitorImageElement(imageRef.current, context)
-      }
-    }, [alt, isAlexandriaLogo])
-    
-    // If all paths failed, show error state
-    if (hasError) {
-      debugLog('ImageWithFallback - Showing error state for:', originalSrc)
-      return alt ? (
-        <div 
-          className="md-img-error"
-          style={{
-            display: 'block',
-            margin: '12px auto',
-            padding: '8px',
-            border: '1px dashed #ccc',
-            textAlign: 'center',
-            color: '#666',
-            fontStyle: 'italic'
-          }}
-        >
-          {alt} (Image failed to load)
-        </div>
-      ) : null
+    // FORCE ABSOLUTE URL FOR ALEXANDRIA
+    let finalSrc = originalSrc
+    if (originalSrc.includes('alexandria.png')) {
+      finalSrc = 'https://runawaydevil.github.io/alexandria/alexandria.png'
+      console.log('🚨 FORCED ABSOLUTE URL:', finalSrc)
     }
     
-    debugLog('ImageWithFallback - Rendering img with src:', currentSrc)
-    
     return (
-      <img 
-        ref={imageRef}
-        src={currentSrc} 
-        alt={alt} 
-        className="md-img md-img-force-visible"
-        loading="lazy"
-        style={isAlexandriaLogo ? { 
-          maxWidth: '200px', 
-          height: 'auto',
-          border: '1px solid #ccc',
-          display: 'block',
-          margin: '12px auto',
-          visibility: 'visible',
-          opacity: 1,
-          position: 'static'
-        } : { 
-          display: 'block',
-          margin: '12px auto',
-          visibility: 'visible',
-          opacity: 1,
-          position: 'static'
-        }}
-        onError={handleImageError}
-        onLoad={handleImageLoad}
-      />
+      <div style={{
+        border: '2px solid green',
+        padding: '10px',
+        margin: '10px',
+        backgroundColor: 'lightgreen'
+      }}>
+        <p style={{ color: 'black', fontSize: '12px' }}>
+          EMERGENCY IMAGE CONTAINER - SRC: {finalSrc}
+        </p>
+        <img 
+          src={finalSrc}
+          alt={alt || 'Emergency Image'}
+          style={{
+            display: 'block',
+            margin: '0 auto',
+            maxWidth: '200px',
+            border: '2px solid red',
+            backgroundColor: 'white'
+          }}
+          onLoad={() => console.log('🚨 EMERGENCY FALLBACK IMAGE LOADED:', finalSrc)}
+          onError={() => console.log('🚨 EMERGENCY FALLBACK IMAGE ERROR:', finalSrc)}
+        />
+      </div>
     )
   }
 
   return (
     <div className={`markdown-renderer ${className}`}>
+      {/* EMERGENCY TEST: Direct image rendering for Alexandria logo */}
+      {content.includes('alexandria.png') && (
+        <div style={{
+          textAlign: 'center',
+          margin: '20px 0',
+          padding: '20px',
+          border: '2px solid red',
+          backgroundColor: 'yellow'
+        }}>
+          <h3 style={{ color: 'red' }}>EMERGENCY TEST - DIRECT IMAGE</h3>
+          <img 
+            src="https://runawaydevil.github.io/alexandria/alexandria.png"
+            alt="Direct Alexandria Logo Test"
+            style={{
+              display: 'block',
+              margin: '0 auto',
+              maxWidth: '200px',
+              border: '3px solid blue',
+              backgroundColor: 'white'
+            }}
+            onLoad={() => console.log('🚨 DIRECT IMAGE LOADED!')}
+            onError={() => console.log('🚨 DIRECT IMAGE ERROR!')}
+          />
+        </div>
+      )}
+      
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[
