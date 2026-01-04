@@ -134,7 +134,10 @@
   height: auto;
   border: 1px solid var(--border-color);
   margin: 8px auto;
-  display: block;
+  display: block !important; /* Force display block */
+  visibility: visible !important; /* Force visibility */
+  opacity: 1 !important; /* Force opacity */
+  position: static !important; /* Prevent positioning issues */
 }
 
 .md-img-error {

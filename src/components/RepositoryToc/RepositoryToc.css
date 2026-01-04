@@ -1,6 +1,6 @@
 .repository-toc {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -10,7 +10,7 @@
   margin: 0 0 0.75rem 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
 }
 
 .toc-list {
@@ -29,7 +29,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.5rem;
-  color: #0066cc;
+  color: var(--primary-color);
   text-decoration: none;
   border-radius: 4px;
   font-size: 0.875rem;
@@ -38,23 +38,23 @@
 }
 
 .toc-link:hover {
-  background: #e9ecef;
-  color: #004499;
+  background: var(--border-color);
+  color: var(--text-secondary);
 }
 
 .toc-link:focus {
-  outline: 2px solid #0066cc;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .toc-link-active {
-  background: #0066cc;
-  color: white;
+  background: var(--primary-color);
+  color: var(--background-color);
 }
 
 .toc-link-active:hover {
-  background: #004499;
-  color: white;
+  background: var(--text-secondary);
+  color: var(--background-color);
 }
 
 .toc-icon {
@@ -67,39 +67,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .repository-toc {
-    background: #2d3748;
-    border-color: #4a5568;
-  }
-
-  .toc-title {
-    color: #e2e8f0;
-  }
-
-  .toc-link {
-    color: #63b3ed;
-  }
-
-  .toc-link:hover {
-    background: #4a5568;
-    color: #90cdf4;
-  }
-
-  .toc-link:focus {
-    outline-color: #63b3ed;
-  }
-
-  .toc-link-active {
-    background: #63b3ed;
-    color: #1a202c;
-  }
-
-  .toc-link-active:hover {
-    background: #90cdf4;
-    color: #1a202c;
-  }
 }

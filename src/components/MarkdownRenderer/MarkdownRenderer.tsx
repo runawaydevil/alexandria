@@ -5,6 +5,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeHighlight from 'rehype-highlight'
 import { LinkRewriter } from '../../services/LinkRewriter'
 import { DocumentContext } from '../../types'
+import { debugImageElement, monitorImageElement, debugLog, isDebugMode } from '../../utils/cssDebugger'
 import './MarkdownRenderer.css'
 
 interface MarkdownRendererProps {
@@ -38,10 +39,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
 
   // Helper function to convert image paths - FIXED TO DETECT ENVIRONMENT
   const convertImagePath = (src: string): string => {
-    console.log('🔍 convertImagePath - Input src:', src)
+    debugLog('convertImagePath - Input src:', src)
     
     if (!src || src.startsWith('http') || src.startsWith('data:')) {
-      console.log('🔍 convertImagePath - Already absolute, returning:', src)
+      debugLog('convertImagePath - Already absolute, returning:', src)
       return src
     }
 
@@ -50,16 +51,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const pathname = window.location.pathname
       const hostname = window.location.hostname
       
-      console.log('🔍 convertImagePath - Environment check:', { pathname, hostname })
+      debugLog('convertImagePath - Environment check:', { pathname, hostname })
       
       // Production environment (GitHub Pages)
       if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
-        console.log('🔍 convertImagePath - PRODUCTION: Converting to /alexandria/alexandria.png')
+        debugLog('convertImagePath - PRODUCTION: Converting to /alexandria/alexandria.png')
         return '/alexandria/alexandria.png'
       }
       
       // Development environment
-      console.log('🔍 convertImagePath - DEVELOPMENT: Converting to /alexandria.png')
+      debugLog('convertImagePath - DEVELOPMENT: Converting to /alexandria.png')
       return '/alexandria.png'
     }
 
@@ -69,15 +70,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       const pathname = window.location.pathname
       const hostname = window.location.hostname
       
-      console.log('🔍 convertImagePath - Public file detected:', filename)
+      debugLog('convertImagePath - Public file detected:', filename)
       
       if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
         // In production, public files are served from base path
-        console.log('🔍 convertImagePath - PRODUCTION: Converting public file to /alexandria/' + filename)
+        debugLog('convertImagePath - PRODUCTION: Converting public file to /alexandria/' + filename)
         return `/alexandria/${filename}`
       } else {
         // In development, public files are served from root
-        console.log('🔍 convertImagePath - DEVELOPMENT: Converting public file to /' + filename)
+        debugLog('convertImagePath - DEVELOPMENT: Converting public file to /' + filename)
         return `/${filename}`
       }
     }
@@ -89,12 +90,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       
       if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
         // In production, prepend base path
-        console.log('🔍 convertImagePath - PRODUCTION: Adding base path to:', src)
+        debugLog('convertImagePath - PRODUCTION: Adding base path to:', src)
         return `/alexandria/${src.replace(/^\.\//, '')}`
       }
     }
 
-    console.log('🔍 convertImagePath - No special handling, returning:', src)
+    debugLog('convertImagePath - No special handling, returning:', src)
     return src
   }
 
@@ -187,42 +188,71 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     align?: string
   }
 
-  // Image component with fallback support
+  // Image component with fallback support and CSS debugging
   const ImageWithFallback: React.FC<{ src: string; alt?: string; isAlexandriaLogo: boolean }> = ({ 
     src: originalSrc, 
     alt,
     isAlexandriaLogo 
   }) => {
-    console.log('🎯 ImageWithFallback - Original src:', originalSrc)
+    debugLog('ImageWithFallback - Original src:', originalSrc)
     const imageSrc = convertImagePath(originalSrc)
     const fallbackPaths = getImageFallbackPaths(originalSrc)
     
     // Create complete list of paths to try (main + fallbacks)
     const allPaths = [imageSrc, ...fallbackPaths]
-    console.log('🎯 ImageWithFallback - All paths to try:', allPaths)
+    debugLog('ImageWithFallback - All paths to try:', allPaths)
     
     const [currentPathIndex, setCurrentPathIndex] = React.useState(0)
     const [hasError, setHasError] = React.useState(false)
+    const imageRef = React.useRef<HTMLImageElement>(null)
     
     // Get current src to display
     const currentSrc = allPaths[currentPathIndex] || imageSrc
     
     // Handle image load errors with fallback strategy
     const handleImageError = React.useCallback(() => {
-      console.log('❌ ImageWithFallback - Image error for:', currentSrc)
-      console.log('❌ ImageWithFallback - Current path index:', currentPathIndex, 'of', allPaths.length)
+      debugLog('ImageWithFallback - Image error for:', currentSrc)
+      debugLog('ImageWithFallback - Current path index:', `${currentPathIndex} of ${allPaths.length}`)
+      
+      // Debug the failed image element
+      if (imageRef.current && isDebugMode()) {
+        debugImageElement(imageRef.current, `Failed: ${alt || 'Unknown'} - ${currentSrc}`)
+      }
       
       // Try next path
       if (currentPathIndex + 1 < allPaths.length) {
         const nextIndex = currentPathIndex + 1
-        console.log('🔄 ImageWithFallback - Trying next path:', allPaths[nextIndex])
+        debugLog('ImageWithFallback - Trying next path:', allPaths[nextIndex])
         setCurrentPathIndex(nextIndex)
       } else {
         // All paths exhausted
         setHasError(true)
         console.error('💀 ImageWithFallback - ALL PATHS FAILED for:', originalSrc)
       }
-    }, [currentPathIndex, allPaths, currentSrc, originalSrc])
+    }, [currentPathIndex, allPaths, currentSrc, originalSrc, alt])
+    
+    // Handle successful image load
+    const handleImageLoad = React.useCallback(() => {
+      debugLog('ImageWithFallback - Image loaded successfully:', currentSrc)
+      setHasError(false)
+      
+      // Perform CSS debugging on successful load
+      if (imageRef.current) {
+        const context = `${isAlexandriaLogo ? 'Alexandria Logo' : 'Image'}: ${alt || 'Unknown'}`
+        
+        // Immediate debug
+        if (isDebugMode()) {
+          debugImageElement(imageRef.current, context)
+        }
+        
+        // Delayed debug to catch any CSS changes
+        setTimeout(() => {
+          if (imageRef.current && isDebugMode()) {
+            debugImageElement(imageRef.current, `${context} (Delayed Check)`)
+          }
+        }, 500)
+      }
+    }, [currentSrc, alt, isAlexandriaLogo])
     
     // Reset state when original src changes
     React.useEffect(() => {
@@ -230,9 +260,17 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       setHasError(false)
     }, [originalSrc])
     
+    // Set up monitoring when ref is available
+    React.useEffect(() => {
+      if (imageRef.current && isDebugMode()) {
+        const context = `${isAlexandriaLogo ? 'Alexandria Logo' : 'Image'}: ${alt || 'Unknown'}`
+        monitorImageElement(imageRef.current, context)
+      }
+    }, [alt, isAlexandriaLogo])
+    
     // If all paths failed, show error state
     if (hasError) {
-      console.log('💀 ImageWithFallback - Showing error state for:', originalSrc)
+      debugLog('ImageWithFallback - Showing error state for:', originalSrc)
       return alt ? (
         <div 
           className="md-img-error"
@@ -251,16 +289,17 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       ) : null
     }
     
-    console.log('✅ ImageWithFallback - Rendering img with src:', currentSrc)
+    debugLog('ImageWithFallback - Rendering img with src:', currentSrc)
     
     return (
       <img 
+        ref={imageRef}
         src={currentSrc} 
         alt={alt} 
         className="md-img"
         loading="lazy"
         style={isAlexandriaLogo ? { 
-          maxWidth: '259px', 
+          maxWidth: '200px', 
           height: 'auto',
           border: '1px solid #ccc',
           display: 'block',
@@ -270,10 +309,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           margin: '12px auto'
         }}
         onError={handleImageError}
-        onLoad={() => {
-          console.log('✅ ImageWithFallback - Image loaded successfully:', currentSrc)
-          setHasError(false)
-        }}
+        onLoad={handleImageLoad}
       />
     )
   }
@@ -384,16 +420,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             )
           },
           img: ({ src, alt }) => {
-            console.log('🖼️ MarkdownRenderer - Processing image:', { src, alt })
-            console.log('🖼️ MarkdownRenderer - Current location:', window.location.href)
+            debugLog('MarkdownRenderer - Processing image:', { src, alt })
+            debugLog('MarkdownRenderer - Current location:', window.location.href)
             
             // Check if it's Alexandria logo for special styling
             const isAlexandriaLogo = alt?.toLowerCase().includes('logo') || 
                                    src?.includes('alexandria.png') ||
                                    alt?.toLowerCase().includes('alexandria')
             
-            console.log('🖼️ MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
-            console.log('🖼️ MarkdownRenderer - Will convert src from:', src, 'to:', convertImagePath(src || ''))
+            debugLog('MarkdownRenderer - Is Alexandria logo:', isAlexandriaLogo)
+            debugLog(`MarkdownRenderer - Will convert src from: ${src} to: ${convertImagePath(src || '')}`)
             
             return <ImageWithFallback src={src || ''} alt={alt} isAlexandriaLogo={!!isAlexandriaLogo} />
           },

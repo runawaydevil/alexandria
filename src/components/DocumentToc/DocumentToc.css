@@ -1,6 +1,6 @@
 .document-toc {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -10,7 +10,7 @@
   margin: 0 0 0.75rem 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
 }
 
 .toc-list {
@@ -31,7 +31,7 @@
   background: none;
   border: none;
   padding: 0.25rem 0;
-  color: #0066cc;
+  color: var(--primary-color);
   text-decoration: none;
   cursor: pointer;
   font-size: 0.875rem;
@@ -40,12 +40,12 @@
 }
 
 .toc-link:hover {
-  color: #004499;
+  color: var(--text-secondary);
   text-decoration: underline;
 }
 
 .toc-link:focus {
-  outline: 2px solid #0066cc;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
@@ -77,28 +77,4 @@
 .toc-level-6 .toc-link {
   padding-left: 5rem;
   font-size: 0.75rem;
-}
-
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  .document-toc {
-    background: #2d3748;
-    border-color: #4a5568;
-  }
-
-  .toc-title {
-    color: #e2e8f0;
-  }
-
-  .toc-link {
-    color: #63b3ed;
-  }
-
-  .toc-link:hover {
-    color: #90cdf4;
-  }
-
-  .toc-link:focus {
-    outline-color: #63b3ed;
-  }
 }
