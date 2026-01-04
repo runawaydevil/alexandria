@@ -9,6 +9,7 @@ import NavigationHistory from '../../components/NavigationHistory/NavigationHist
 import Breadcrumb from '../../components/Breadcrumb/Breadcrumb'
 import { FileContent, Repository } from '../../types'
 import { DocumentToc as DocumentTocType, RepositoryToc as RepositoryTocType } from '../../services/TocGenerator'
+import { decodeBase64ToUTF8 } from '../../utils/base64Decoder'
 import './Reader.css'
 
 const Reader: React.FC = () => {
@@ -54,9 +55,9 @@ const Reader: React.FC = () => {
         fileContent = await apiClient.getReadme(owner, repo, ref || repository.defaultBranch)
       }
 
-      // Decode content if base64
+      // Decode content if base64 with UTF-8 support
       const decodedContent = fileContent.encoding === 'base64' 
-        ? atob(fileContent.content.replace(/\n/g, ''))
+        ? decodeBase64ToUTF8(fileContent.content)
         : fileContent.content
 
       setContent(decodedContent)

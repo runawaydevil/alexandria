@@ -184,6 +184,11 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
   }
 
+  // Interface for div component with align attribute
+  interface DivProps extends React.HTMLAttributes<HTMLDivElement> {
+    align?: string
+  }
+
   return (
     <div className={`markdown-renderer ${className}`}>
       <ReactMarkdown
@@ -221,7 +226,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         ]}
         components={{
           // Custom components for Y2K styling
-          div: ({ children, align, ...props }) => (
+          div: ({ children, align, ...props }: DivProps) => (
             <div 
               {...props}
               style={align === 'center' ? { textAlign: 'center' } : undefined}

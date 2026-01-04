@@ -8,6 +8,7 @@ import MarkdownRenderer from '../../components/MarkdownRenderer/MarkdownRenderer
 // import ConfigurationBanner from '../../components/ConfigurationBanner/ConfigurationBanner'
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay'
 import { ConfigurationError, ConfigurationErrorHandler, ConfigurationErrorType } from '../../types/ConfigurationError'
+import { decodeBase64ToUTF8 } from '../../utils/base64Decoder'
 import './Home.css'
 
 const Home: React.FC = () => {
@@ -19,6 +20,13 @@ const Home: React.FC = () => {
   const [repoInput, setRepoInput] = useState('')
   
   const { randomEngine, apiClient } = createServices()
+
+  // Function to remove duplicate title from README content
+  const removeDuplicateTitle = (content: string): string => {
+    // Remove first H1 if it matches the title
+    const titlePattern = /^#\s+Alexandria\s*-\s*The\s+Greatest\s+GitHub\s+Library\s*\n?/i
+    return content.replace(titlePattern, '')
+  }
 
   // Load configured default repository README on component mount
   useEffect(() => {
@@ -72,10 +80,13 @@ const Home: React.FC = () => {
         }
       }
       
-      // Decode base64 content
-      const content = readme.encoding === 'base64' 
-        ? atob(readme.content.replace(/\n/g, ''))
+      // Decode base64 content with UTF-8 support
+      const decodedContent = readme.encoding === 'base64' 
+        ? decodeBase64ToUTF8(readme.content)
         : readme.content
+      
+      // Remove duplicate title if present
+      const content = removeDuplicateTitle(decodedContent)
       
       console.log('README content loaded:', content.substring(0, 200)) // Debug log
       setReadmeContent(content)
@@ -191,27 +202,6 @@ const Home: React.FC = () => {
       {/* ConfigurationBanner component kept for potential future use */}
 
       <div className="readme-content">
-        <h1 style={{textAlign: 'center'}}>Alexandria - The Greatest GitHub Library</h1>
-        <div style={{textAlign: 'center', margin: '20px 0'}}>
-          <img 
-            src="/alexandria.png" 
-            alt="Alexandria Logo" 
-            style={{
-              maxWidth: '200px',
-              height: 'auto',
-              border: '1px solid #ccc',
-              display: 'block',
-              margin: '0 auto'
-            }}
-            onLoad={() => console.log('Direct image loaded successfully')}
-            onError={(e) => {
-              console.log('Direct image failed to load')
-              const img = e.target as HTMLImageElement
-              img.style.border = '2px solid red'
-              img.alt = 'FAILED TO LOAD'
-            }}
-          />
-        </div>
         <MarkdownRenderer 
           content={readmeContent} 
           repositoryContext={{
