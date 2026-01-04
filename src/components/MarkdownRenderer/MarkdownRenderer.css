@@ -140,6 +140,14 @@
   position: static !important; /* Prevent positioning issues */
 }
 
+.md-img-force-visible {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  z-index: 1000 !important;
+}
+
 .md-img-error {
   max-width: 100%;
   height: auto;

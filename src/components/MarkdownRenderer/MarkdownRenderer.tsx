@@ -37,7 +37,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     links: [] // Will be populated by LinkRewriter if needed
   } : undefined
 
-  // Helper function to convert image paths - FIXED TO DETECT ENVIRONMENT
+  // Helper function to convert image paths - SIMPLIFIED AND FIXED
   const convertImagePath = (src: string): string => {
     debugLog('convertImagePath - Input src:', src)
     
@@ -46,17 +46,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return src
     }
 
-    // Special handling for Alexandria logo - DETECT ENVIRONMENT LIKE HEADER
+    // FORCE PRODUCTION PATH FOR ALEXANDRIA LOGO
     if (src.includes('alexandria.png')) {
-      const pathname = window.location.pathname
       const hostname = window.location.hostname
+      debugLog('convertImagePath - Alexandria logo detected, hostname:', hostname)
       
-      debugLog('convertImagePath - Environment check:', { pathname, hostname })
-      
-      // Production environment (GitHub Pages)
-      if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
-        debugLog('convertImagePath - PRODUCTION: Converting to /alexandria/alexandria.png')
-        return '/alexandria/alexandria.png'
+      // Always use production path for GitHub Pages
+      if (hostname.includes('github.io')) {
+        const forcedPath = '/alexandria/alexandria.png'
+        debugLog('convertImagePath - FORCING PRODUCTION PATH:', forcedPath)
+        return forcedPath
       }
       
       // Development environment
@@ -64,34 +63,20 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return '/alexandria.png'
     }
 
-    // Handle ./public/ paths specifically (Vite copies public files to root)
+    // Handle ./public/ paths - SIMPLIFIED
     if (src.startsWith('./public/')) {
       const filename = src.replace('./public/', '')
-      const pathname = window.location.pathname
       const hostname = window.location.hostname
       
       debugLog('convertImagePath - Public file detected:', filename)
       
-      if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
-        // In production, public files are served from base path
-        debugLog('convertImagePath - PRODUCTION: Converting public file to /alexandria/' + filename)
-        return `/alexandria/${filename}`
+      if (hostname.includes('github.io')) {
+        const forcedPath = `/alexandria/${filename}`
+        debugLog('convertImagePath - FORCING PRODUCTION PUBLIC PATH:', forcedPath)
+        return forcedPath
       } else {
-        // In development, public files are served from root
         debugLog('convertImagePath - DEVELOPMENT: Converting public file to /' + filename)
         return `/${filename}`
-      }
-    }
-
-    // For other relative paths in production, add base path
-    if (!src.startsWith('/') && !src.startsWith('http')) {
-      const pathname = window.location.pathname
-      const hostname = window.location.hostname
-      
-      if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
-        // In production, prepend base path
-        debugLog('convertImagePath - PRODUCTION: Adding base path to:', src)
-        return `/alexandria/${src.replace(/^\.\//, '')}`
       }
     }
 
@@ -99,41 +84,30 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     return src
   }
 
-  // Helper function to get fallback paths for images
+  // Helper function to get fallback paths for images - SIMPLIFIED
   const getImageFallbackPaths = (originalSrc: string): string[] => {
     const fallbacks: string[] = []
     
-    // Special handling for Alexandria logo and public files
+    // Special handling for Alexandria logo - FORCE CORRECT PATHS
     if (originalSrc.includes('alexandria.png') || originalSrc.startsWith('./public/')) {
-      const pathname = window.location.pathname
       const hostname = window.location.hostname
-      const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
       
-      if (isProduction) {
-        // Production: try multiple production paths
+      if (hostname.includes('github.io')) {
+        // Production: try the exact paths we know work
         fallbacks.push('/alexandria/alexandria.png')
         fallbacks.push('/alexandria/public/alexandria.png')
-        fallbacks.push('/alexandria.png')
+        // GitHub raw URL as backup
+        fallbacks.push('https://raw.githubusercontent.com/runawaydevil/alexandria/main/public/alexandria.png')
       } else {
         // Development: try dev paths
         fallbacks.push('/alexandria.png')
         fallbacks.push('/public/alexandria.png')
-        fallbacks.push('/alexandria/alexandria.png')
       }
-      
-      // Always add GitHub raw URL as final fallback
-      if (repositoryContext) {
-        const { owner, repo, ref } = repositoryContext
-        fallbacks.push(`https://raw.githubusercontent.com/${owner}/${repo}/${ref}/public/alexandria.png`)
-      }
-      
-      // Add additional fallback paths for Alexandria logo
-      fallbacks.push('https://raw.githubusercontent.com/runawaydevil/alexandria/main/public/alexandria.png')
       
       return fallbacks
     }
 
-    // For repository images, try different path variations
+    // For other repository images, keep existing logic
     if (repositoryContext && originalSrc && !originalSrc.startsWith('http')) {
       const { owner, repo, ref } = repositoryContext
       
@@ -234,11 +208,18 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     // Handle successful image load
     const handleImageLoad = React.useCallback(() => {
       debugLog('ImageWithFallback - Image loaded successfully:', currentSrc)
+      console.log('🎯 ALEXANDRIA LOGO LOADED:', currentSrc) // Force log even without debug mode
       setHasError(false)
       
       // Perform CSS debugging on successful load
       if (imageRef.current) {
         const context = `${isAlexandriaLogo ? 'Alexandria Logo' : 'Image'}: ${alt || 'Unknown'}`
+        
+        // ALWAYS log for Alexandria logo
+        if (isAlexandriaLogo) {
+          console.log('🎯 ALEXANDRIA LOGO ELEMENT:', imageRef.current)
+          console.log('🎯 ALEXANDRIA LOGO COMPUTED STYLES:', window.getComputedStyle(imageRef.current))
+        }
         
         // Immediate debug
         if (isDebugMode()) {
@@ -296,17 +277,23 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         ref={imageRef}
         src={currentSrc} 
         alt={alt} 
-        className="md-img"
+        className="md-img md-img-force-visible"
         loading="lazy"
         style={isAlexandriaLogo ? { 
           maxWidth: '200px', 
           height: 'auto',
           border: '1px solid #ccc',
           display: 'block',
-          margin: '12px auto'
+          margin: '12px auto',
+          visibility: 'visible',
+          opacity: 1,
+          position: 'static'
         } : { 
           display: 'block',
-          margin: '12px auto'
+          margin: '12px auto',
+          visibility: 'visible',
+          opacity: 1,
+          position: 'static'
         }}
         onError={handleImageError}
         onLoad={handleImageLoad}
