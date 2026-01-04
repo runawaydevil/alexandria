@@ -10,6 +10,9 @@ import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay'
 import { ConfigurationError, ConfigurationErrorHandler, ConfigurationErrorType } from '../../types/ConfigurationError'
 import { decodeBase64ToUTF8 } from '../../utils/base64Decoder'
 import { validateRepositoryParams } from '../../utils/validationUtils'
+import { isRateLimitError } from '../../utils/errorUtils'
+import { RateLimitError, SecondaryRateLimitError } from '../../services/GitHubApiClient'
+import RateLimitWarning from '../../components/RateLimitWarning/RateLimitWarning'
 import './Home.css'
 
 const Home: React.FC = () => {

@@ -26,7 +26,6 @@ export function getRateLimitResetTime(error: unknown): number | null {
  */
 export function getRateLimitMessage(error: unknown): string {
   if (error instanceof RateLimitError) {
-    const resetTime = new Date(error.resetTime * 1000)
     const minutesUntilReset = Math.ceil((error.resetTime - Math.floor(Date.now() / 1000)) / 60)
     return `Rate limit exceeded. Please wait approximately ${minutesUntilReset} minute${minutesUntilReset !== 1 ? 's' : ''} before trying again.`
   }
