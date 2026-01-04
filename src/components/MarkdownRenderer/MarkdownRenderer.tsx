@@ -63,6 +63,25 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       return '/alexandria.png'
     }
 
+    // Handle ./public/ paths specifically (Vite copies public files to root)
+    if (src.startsWith('./public/')) {
+      const filename = src.replace('./public/', '')
+      const pathname = window.location.pathname
+      const hostname = window.location.hostname
+      
+      console.log('🔍 convertImagePath - Public file detected:', filename)
+      
+      if (hostname.includes('github.io') || pathname.startsWith('/alexandria')) {
+        // In production, public files are served from base path
+        console.log('🔍 convertImagePath - PRODUCTION: Converting public file to /alexandria/' + filename)
+        return `/alexandria/${filename}`
+      } else {
+        // In development, public files are served from root
+        console.log('🔍 convertImagePath - DEVELOPMENT: Converting public file to /' + filename)
+        return `/${filename}`
+      }
+    }
+
     // For other relative paths in production, add base path
     if (!src.startsWith('/') && !src.startsWith('http')) {
       const pathname = window.location.pathname
@@ -83,8 +102,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   const getImageFallbackPaths = (originalSrc: string): string[] => {
     const fallbacks: string[] = []
     
-    // Special handling for Alexandria logo - INCLUDE BOTH ENVIRONMENTS
-    if (originalSrc.includes('alexandria.png')) {
+    // Special handling for Alexandria logo and public files
+    if (originalSrc.includes('alexandria.png') || originalSrc.startsWith('./public/')) {
       const pathname = window.location.pathname
       const hostname = window.location.hostname
       const isProduction = hostname.includes('github.io') || pathname.startsWith('/alexandria')
