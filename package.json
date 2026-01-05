@@ -17,7 +17,7 @@
     "react",
     "typescript"
   ],
-  "author": "runawaydevil",
+  "author": "Runaway Devil <runawaydevil@pm.me>",
   "license": "MIT",
   "homepage": "https://runawaydevil.github.io/Alexandria/",
   "dependencies": {
