@@ -57,20 +57,6 @@ body {
   border: 0;
 }
 
-.loading {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-color);
-  border-radius: 50%;
-  border-top-color: var(--primary-color);
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 /* Enhanced Unicode font support for specific elements */
 h1, h2, h3, h4, h5, h6 {
   font-family: 

@@ -4,6 +4,7 @@ import { createServices } from '../../services'
 import { configurationManager } from '../../services'
 import { RandomEngine } from '../../services/RandomEngine'
 import MarkdownRenderer from '../../components/MarkdownRenderer/MarkdownRenderer'
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 // ConfigurationBanner import removed - component kept for potential future use
 // import ConfigurationBanner from '../../components/ConfigurationBanner/ConfigurationBanner'
 import ErrorDisplay from '../../components/ErrorDisplay/ErrorDisplay'
@@ -199,9 +200,10 @@ const Home: React.FC = () => {
   if (isLoadingReadme) {
     return (
       <div className="home">
-        <div className="loading">
-          <h2>🔄 Loading Alexandria...</h2>
-        </div>
+        <LoadingSpinner 
+          message="Loading Alexandria" 
+          size="large"
+        />
       </div>
     )
   }

@@ -5,17 +5,6 @@
   background-color: var(--background-color);
 }
 
-.loading {
-  text-align: center;
-  padding: 32px 16px;
-}
-
-.loading h2 {
-  color: var(--text-secondary);
-  font-weight: normal;
-  font-size: 14px;
-}
-
 .readme-content {
   margin-bottom: 24px;
   line-height: 1.4;

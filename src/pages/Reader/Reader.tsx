@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { createServices } from '../../services'
 import { RandomEngine } from '../../services/RandomEngine'
 import MarkdownRenderer from '../../components/MarkdownRenderer/MarkdownRenderer'
+import LoadingSpinner from '../../components/LoadingSpinner/LoadingSpinner'
 import DocumentToc from '../../components/DocumentToc/DocumentToc'
 import RepositoryToc from '../../components/RepositoryToc/RepositoryToc'
 import NavigationHistory from '../../components/NavigationHistory/NavigationHistory'
@@ -199,9 +200,10 @@ const Reader: React.FC = () => {
   if (isLoading) {
     return (
       <div className="reader">
-        <div className="loading">
-          <h2>🔄 Loading content...</h2>
-        </div>
+        <LoadingSpinner 
+          message="Loading content" 
+          size="medium"
+        />
       </div>
     )
   }
@@ -306,7 +308,10 @@ const Reader: React.FC = () => {
           
           {isLoadingToc && (
             <div className="toc-loading">
-              <p>🔄 Loading navigation...</p>
+              <LoadingSpinner 
+                message="Loading navigation" 
+                size="small"
+              />
             </div>
           )}
         </div>
