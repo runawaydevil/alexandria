@@ -34,6 +34,24 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Verify highlight.js installation
+      run: |
+        echo "🔍 Verifying highlight.js installation..."
+        if npm list highlight.js > /dev/null 2>&1; then
+          echo "✅ highlight.js is installed"
+          npm list highlight.js
+        else
+          echo "❌ highlight.js not found, installing..."
+          npm install highlight.js@^11.11.1
+        fi
+        
+    - name: Verify build dependencies
+      run: |
+        echo "🔍 Verifying all build dependencies..."
+        npm run verify-deps
+        npm list --depth=0
+        echo "✅ All dependencies verified"
+      
     - name: Validate configuration
       run: |
         echo "🔧 Alexandria Configuration Validation"
@@ -56,6 +74,31 @@ jobs:
       env:
         VITE_DEFAULT_OWNER: ${{ secrets.VITE_DEFAULT_OWNER || 'runawaydevil' }}
         VITE_DEFAULT_REPO: ${{ secrets.VITE_DEFAULT_REPO || 'alexandria' }}
+        
+    - name: Verify build output
+      run: |
+        echo "🔍 Verifying build output..."
+        if [ -d "dist" ]; then
+          echo "✅ Build directory created"
+          ls -la dist/
+          if [ -f "dist/index.html" ]; then
+            echo "✅ index.html generated"
+          else
+            echo "❌ index.html not found"
+            exit 1
+          fi
+          if ls dist/assets/*.css 1> /dev/null 2>&1; then
+            echo "✅ CSS files generated"
+            echo "CSS files:"
+            ls -la dist/assets/*.css
+          else
+            echo "❌ CSS files not found"
+            exit 1
+          fi
+        else
+          echo "❌ Build directory not found"
+          exit 1
+        fi
         
     - name: Setup Pages
       uses: actions/configure-pages@v4

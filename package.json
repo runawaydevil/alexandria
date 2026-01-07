@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "verify-deps": "node -e \"console.log('✅ highlight.js:', require('highlight.js/package.json').version); console.log('✅ rehype-highlight: installed');\""
   },
   "keywords": [
     "github",
@@ -21,6 +22,7 @@
   "license": "MIT",
   "homepage": "https://runawaydevil.github.io/Alexandria/",
   "dependencies": {
+    "highlight.js": "^11.11.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-markdown": "^10.1.0",

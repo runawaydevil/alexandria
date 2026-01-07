@@ -6,6 +6,8 @@ import rehypeHighlight from 'rehype-highlight'
 import rehypeRaw from 'rehype-raw'
 import { LinkRewriter } from '../../services/LinkRewriter'
 import { DocumentContext } from '../../types'
+// Import a clean, minimal highlight.js theme that works well with Y2K style
+import 'highlight.js/styles/github.css'
 import './MarkdownRenderer.css'
 
 interface MarkdownRendererProps {

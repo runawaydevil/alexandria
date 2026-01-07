@@ -279,20 +279,81 @@
   color: var(--text-color) !important;
   border: 1px solid var(--border-color);
   padding: 8px;
+  font-size: 11px;
+  font-family: 
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
+    "Consolas", "Courier New",
+    "Liberation Mono", "DejaVu Sans Mono", "Noto Sans Mono",
+    Courier, monospace;
+  overflow-x: auto;
+  border-radius: 0; /* Y2K style - no rounded corners */
 }
 
-.markdown-renderer .hljs-keyword {
-  color: var(--primary-color) !important;
+/* Syntax highlighting color overrides for Y2K theme */
+.markdown-renderer .hljs-keyword,
+.markdown-renderer .hljs-selector-tag,
+.markdown-renderer .hljs-literal,
+.markdown-renderer .hljs-section,
+.markdown-renderer .hljs-link {
+  color: #000000 !important;
   font-weight: bold;
 }
 
-.markdown-renderer .hljs-string {
-  color: var(--text-secondary) !important;
+.markdown-renderer .hljs-string,
+.markdown-renderer .hljs-title,
+.markdown-renderer .hljs-name,
+.markdown-renderer .hljs-type,
+.markdown-renderer .hljs-attribute,
+.markdown-renderer .hljs-symbol,
+.markdown-renderer .hljs-bullet,
+.markdown-renderer .hljs-built_in,
+.markdown-renderer .hljs-addition,
+.markdown-renderer .hljs-variable,
+.markdown-renderer .hljs-template-tag,
+.markdown-renderer .hljs-template-variable {
+  color: #666666 !important;
 }
 
-.markdown-renderer .hljs-comment {
-  color: var(--text-secondary) !important;
+.markdown-renderer .hljs-comment,
+.markdown-renderer .hljs-quote,
+.markdown-renderer .hljs-deletion,
+.markdown-renderer .hljs-meta {
+  color: #999999 !important;
   font-style: italic;
+}
+
+.markdown-renderer .hljs-number,
+.markdown-renderer .hljs-regexp,
+.markdown-renderer .hljs-selector-id,
+.markdown-renderer .hljs-selector-class,
+.markdown-renderer .hljs-selector-attr,
+.markdown-renderer .hljs-selector-pseudo,
+.markdown-renderer .hljs-doctag,
+.markdown-renderer .hljs-formula {
+  color: #333333 !important;
+}
+
+.markdown-renderer .hljs-emphasis {
+  font-style: italic;
+}
+
+.markdown-renderer .hljs-strong {
+  font-weight: bold;
+}
+
+/* Ensure code blocks in pre tags are properly styled */
+.markdown-renderer pre .hljs {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Fix for inline code vs block code */
+.markdown-renderer pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: inherit !important;
 }
 
 /* Responsive adjustments */
